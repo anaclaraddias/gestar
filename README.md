@@ -17,3 +17,8 @@ Hospitais e unidades de saúde pública enfrentam problemas organizacionais liga
 
 ### Como a solução proposta poderá melhorar o processo.
 Gestar é um sistema unificado e escalável que foca em gerenciar filas, triagens e exames. Contendo: triagem digital com acesso ao prontuário, fila priorizada por urgência clínica, alertas clínicos e histórico na tela do atendimento. Agilizando o atendimento, unindo informações e processos, e organizando filas.
+
+Participantes:
+- Ana Clara Domingos Dias Silva - 12316965
+- Samuel Zappala Batista - 12411504
+- Gabriel Victor Dornelas Ferreira Sathler - 12319216
