@@ -1,4 +1,4 @@
-# Diagramas e Guia de Implementação — Gestar
+# Diagramas e Guia de Implementação do Gestar
 
 Modelagem da fatia implementada: **triagem com classificação de risco + fila priorizada**.
 As descrições textuais dos casos de uso estão em `requisitos.md` (Seção 7); aqui ficam
@@ -165,7 +165,7 @@ classDiagram
 
 ---
 
-## 3. Guia de Implementação (norte para codar)
+## 3. Guia de Implementação
 
 | Classe | Responsabilidade | Padrão / SOLID |
 |--------|------------------|----------------|
@@ -215,7 +215,7 @@ src/test/java/br/unibh/gestar/
 | Comportamental | Strategy | `EstrategiaClassificacao` | Troca o protocolo de classificação sem reescrever a fila |
 | Comportamental | Observer | `NotificadorClinico` / `ObservadorAlerta` | Notifica o corpo clínico em casos críticos |
 
-> **Evolução opcional:** `StatusAtendimento` está como enum por simplicidade. Se quiserem
-> exibir um padrão a mais, dá para refatorar o ciclo de vida do atendimento para o padrão
-> **State** (GoF) — mas não é necessário, os quatro acima já cobrem criacional, estrutural
-> e comportamental.
+> **Evolução futura:** mantivemos `StatusAtendimento` como enum por simplicidade. O ciclo
+> de vida do atendimento poderia ser refatorado para o padrão **State** (GoF) numa próxima
+> iteração. Não é necessário neste escopo, já que os quatro padrões adotados cobrem as
+> categorias criacional, estrutural e comportamental.

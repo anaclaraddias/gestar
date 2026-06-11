@@ -1,9 +1,9 @@
-# Registro de Elicitação de Requisitos — Entrevista
+# Registro de Elicitação de Requisitos (Entrevista)
 
 ## Identificação
 
 - **Técnica:** entrevista semiestruturada (assíncrona, por mensagens).
-- **Entrevistada:** Camila — enfermeira plantonista no Pronto Atendimento adulto do
+- **Entrevistada:** Camila, enfermeira plantonista no Pronto Atendimento adulto do
   Hospital Felício Rocho (Belo Horizonte/MG), atuando diretamente na classificação
   de risco; mestranda na área da saúde.
 - **Data:** junho/2026.
@@ -39,8 +39,8 @@ André Luiz, ou unidade Unimed com gineco/obstetra).
 ## Achados por tema
 
 **Protocolo de classificação**
-- Utilizam o **Protocolo de Manchester** — obrigatório; o COREN exige certificação do
-  enfermeiro para classificar risco. ✅ *Valida a estratégia `ClassificacaoManchester`.*
+- Utilizam o **Protocolo de Manchester**, obrigatório; o COREN exige certificação do
+  enfermeiro para classificar risco. *Valida a estratégia `ClassificacaoManchester`.*
 - A classificação não é um simples limite sobre sinais vitais: parte da **queixa
   principal** → abre o **fluxograma** correspondente → avalia os **discriminadores**;
   cada discriminador alterado define a **cor**. Sinais usados na maioria dos casos:
@@ -48,11 +48,11 @@ André Luiz, ou unidade Unimed com gineco/obstetra).
   (glicemia só em fluxogramas específicos; dor torácica não solicita pressão arterial).
 
 **Cores e tempos de atendimento**
-- Verde — pouco urgente — até 120 min
-- Amarelo — urgente — até 60 min
-- Laranja — muito urgente — até 10 min
-- Vermelho — emergência — imediato
-- *(A cor Azul / não urgente do Manchester padrão não foi citada — a confirmar.)*
+- Verde: pouco urgente, até 120 min
+- Amarelo: urgente, até 60 min
+- Laranja: muito urgente, até 10 min
+- Vermelho: emergência, imediato
+- *(A unidade não utiliza a cor Azul do Manchester padrão.)*
 
 **Quem faz**
 - Apenas o **enfermeiro** classifica o risco; a **técnica** somente coleta a queixa.
@@ -63,26 +63,26 @@ André Luiz, ou unidade Unimed com gineco/obstetra).
   classificações já feitas, mas **não mostra o histórico do paciente**.
 - Para ver o histórico, é preciso abrir **outro sistema (SOUL MV)** e buscar pelo nome.
 - Ao finalizar, a triagem vira "Prontuário triagem", visível a quem acessar o prontuário.
-- ✅ *Valida o problema central: informação fragmentada entre sistemas distintos.*
+- *Valida o problema central: informação fragmentada entre sistemas distintos.*
 
 **Ordem de atendimento e desempate**
-- A ordem é pela **cor** (gravidade), não por chegada. ✅
+- A ordem é pela **cor** (gravidade), não por chegada.
 - **Dentro da mesma cor não é puro FIFO:** o **idoso** tende a ser chamado primeiro
-  (prioridade legal). ⚠️ *Corrige a premissa de FIFO simples.*
+  (prioridade legal). *Corrige a premissa de FIFO simples.*
 - Pacientes urgentes têm a ficha entregue diretamente ao médico, para não estourar o
   tempo-alvo.
 
 **Reavaliação**
 - Paciente que **piora** é reavaliado (novos sinais vitais) e pode ser reclassificado.
-- **Regra importante:** a avaliação **não regride** — só pode subir de urgência. Um
+- **Regra importante:** a avaliação **não regride**, só pode subir de urgência. Um
   Verde que piora vira Amarelo; um Amarelo que melhora **não** volta para Verde.
-  ⚠️ *Nova regra de negócio.*
+  *Nova regra de negócio.*
 
 **Falha real observada (perda de informação / concorrência)**
 - O painel exibe as **mesmas senhas para os dois enfermeiros** que triam ao mesmo
   tempo. Em um caso, uma enfermeira **excluiu** uma senha que a outra já atendia; o
   paciente ficou ~2h "fora do sistema" aguardando, e precisou ser reclassificado de
-  Verde para Amarelo por causa do erro. 🆕 *Indica necessidade de "travar" o
+  Verde para Amarelo por causa do erro. *Indica necessidade de "travar" o
   atendimento em triagem para um único profissional.*
 
 **Gargalo de recurso**
@@ -91,11 +91,11 @@ André Luiz, ou unidade Unimed com gineco/obstetra).
 
 **Desejos da usuária (wishlist)**
 - Fixar **doenças de base** na aba da triagem (DPOC, IAM/ano, insuficiência cardíaca,
-  AVC/ano, câncer) — hoje só fixa alergias. Motivo: interpretar o **basal** do paciente.
+  AVC/ano, câncer), hoje só fixa alergias. Motivo: interpretar o **basal** do paciente.
   Ex.: idoso com DPOC chega com saturação 89% (que é o basal dele), mas o sistema
   obriga classificar como Laranja abaixo de 91%; muitos vêm de lar de repouso sem
-  informação clínica. 🆕 *Reforça o valor de "acesso ao histórico na triagem".*
-- Acessibilidade para pacientes surdos/mudos (intérprete de Libras via aplicativo). 🆕
+  informação clínica. *Reforça o valor de "acesso ao histórico na triagem".*
+- Acessibilidade para pacientes surdos/mudos (intérprete de Libras via aplicativo).
 
 ## Protocolos e fluxogramas (complemento por áudio)
 
@@ -118,7 +118,7 @@ abre-se o **protocolo de infarto**. Sem alteração, o paciente segue o fluxo no
 > **Leitura para o projeto:** a classificação Manchester opera por **fluxograma da queixa
 > + discriminadores**, e **certas queixas impõem urgência mínima** (dor torácica ≥ urgente)
 > independentemente dos sinais vitais. Os **protocolos especiais** (AVC, IAM) são fluxos
-> clínicos com metas de tempo — relevantes como regra de negócio, mas a orquestração
+> clínicos com metas de tempo, relevantes como regra de negócio, mas a orquestração
 > clínica em si fica **fora da fatia implementada**.
 
 ## Requisitos e regras derivados da entrevista
@@ -136,21 +136,21 @@ abre-se o **protocolo de infarto**. Sem alteração, o paciente segue o fluxo no
 
 ## Confirmações da entrevistada (segunda rodada)
 
-1. **Cor Azul:** a unidade **não usa** a cor Azul — trabalha apenas com Verde, Amarelo,
+1. **Cor Azul:** a unidade **não usa** a cor Azul, trabalha apenas com Verde, Amarelo,
    Laranja e Vermelho.
-2. **Desempate:** a senha já é tirada por categoria — **normal**, **preferencial** (PCD e
+2. **Desempate:** a senha já é tirada por categoria: **normal**, **preferencial** (PCD e
    idoso 60+) e **prioridade máxima** (idoso 80+). Essas categorias são usadas no desempate
    dentro da mesma cor.
 3. **Fluxo confirmado:** tira senha → triagem (classificação) → faz a ficha (cadastro) →
    consultório médico.
-4. **Encaminhamento (com registro):** o paciente não atendido **é registrado** — na triagem
+4. **Encaminhamento (com registro):** o paciente não atendido **é registrado**: na triagem
    digitam tudo (motivo, sinais vitais e para qual hospital foi referenciado), e o médico da
    grande urgência **carimba** a folha, que é guardada, "porque sempre volta paciente com
    processo". Pacientes do SUS dependem de **autorização da coordenação médica** (ex.:
    transplantados). *Exemplo real relatado:* paciente com PA 210x50 cujo plano não cobria a
-   unidade — orientado a pagar particular ou procurar outra unidade; tudo foi registrado,
+   unidade, e foi orientado a pagar particular ou procurar outra unidade; tudo foi registrado,
    incluindo os sinais vitais e a passagem do caso ao médico da grande urgência.
 
-> **Implicação para o modelo:** "encaminhamento" não é apenas "não entrar na fila" — é uma
+> **Implicação para o modelo:** "encaminhamento" não é apenas "não entrar na fila", e sim uma
 > **disposição registrada** (motivo, sinais vitais, unidade de destino, profissional). Isso
 > enriquece o estado `ENCAMINHADO` do atendimento.

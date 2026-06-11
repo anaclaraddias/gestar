@@ -1,7 +1,7 @@
-# Documento de Requisitos — Gestar
+# Documento de Requisitos do Gestar
 
 **Sistema de Triagem e Fila Priorizada de Atendimento**
-Unidade Curricular: Modelos, Métodos e Técnicas de Engenharia de Software — UniBH
+Unidade Curricular: Modelos, Métodos e Técnicas de Engenharia de Software, UniBH
 
 ---
 
@@ -20,7 +20,7 @@ risco de duplicidade no painel de triagem e a priorização inadequada tem impac
 clínico direto.
 
 O **Gestar** propõe uma triagem digital com classificação de risco, fila priorizada
-por urgência clínica e alertas para casos críticos — integrando informações que hoje
+por urgência clínica e alertas para casos críticos, integrando informações que hoje
 ficam dispersas.
 
 ## 2. Escopo do Trabalho
@@ -62,7 +62,7 @@ Delimita-se uma fatia coesa e relevante:
 | **Médico** | Consulta a fila priorizada, chama o próximo paciente e conduz o atendimento. |
 | **Paciente** | Pessoa que busca atendimento. |
 
-> **Correção em relação à versão inicial:** "Triagem" não é um ator — é um processo.
+> **Correção em relação à versão inicial:** "Triagem" não é um ator, e sim um processo.
 > A entrevista revelou ainda que coleta de queixa (técnica) e classificação de risco
 > (enfermeiro) são atividades de atores distintos.
 
@@ -76,13 +76,13 @@ Delimita-se uma fatia coesa e relevante:
 - **Análise documental:** Protocolo de Manchester e diretrizes de Acolhimento com
   Classificação de Risco.
 
-### 4.2 Principais achados (resumo — detalhe em `entrevista-elicitacao.md`)
+### 4.2 Principais achados (resumo; detalhe completo em `entrevista-elicitacao.md`)
 
 - A priorização é por gravidade (cor), não por ordem de chegada. **Confirma a fila.**
 - O protocolo usado é o **Manchester**: queixa → fluxograma → discriminadores → cor.
   **Confirma a estratégia de classificação.**
-- Dentro da mesma cor, **idoso tem prioridade** — não é FIFO puro. **Corrige a fila.**
-- A reclassificação **não regride** — só aumenta a urgência. **Nova regra.**
+- Dentro da mesma cor, **idoso tem prioridade**, não é FIFO puro. **Corrige a fila.**
+- A reclassificação **não regride**, só aumenta a urgência. **Nova regra.**
 - Há casos **não aceitos** pela unidade, que são **encaminhados**. **Novo requisito.**
 - Sistemas fragmentados (triagem x histórico em sistemas diferentes). **Confirma o problema.**
 
@@ -132,18 +132,18 @@ Médico ──> (UC08 Chamar próximo paciente)
 Médico ──> (UC09 Finalizar atendimento)
 ```
 
-### UC02 — Classificar risco
+### UC02: Classificar risco
 Enfermeiro registra sinais → sistema aplica o protocolo → atribui a cor → verifica
 elegibilidade (UC03) → enfileira (UC05) ou encaminha (UC04).
 
-### UC04 — Encaminhar paciente
+### UC04: Encaminhar paciente
 Caso o caso não seja atendido pela unidade, o atendimento recebe estado "encaminhado"
 e não entra na fila.
 
-### UC07 — Reavaliar e reclassificar
+### UC07: Reavaliar e reclassificar
 Diante de piora, novos sinais são aferidos; a urgência só pode aumentar (RN05).
 
-### UC08 — Chamar próximo paciente
+### UC08: Chamar próximo paciente
 Sistema retorna o atendimento de maior prioridade (cor → idoso → chegada) e o move
 para "em atendimento".
 
@@ -153,7 +153,7 @@ para "em atendimento".
 |----|-------|
 | RN01 | Ordem de prioridade das cores: Vermelho > Laranja > Amarelo > Verde. A unidade **não utiliza** a cor Azul. |
 | RN02 | Tempos-alvo: Vermelho imediato; Laranja 10 min; Amarelo 60 min; Verde 120 min. |
-| RN03 | Dentro da mesma cor, a ordem segue a **categoria de prioridade** da senha — prioridade máxima (idoso 80+) > preferencial (PCD e idoso 60+) > normal — e, por fim, a ordem de chegada. |
+| RN03 | Dentro da mesma cor, a ordem segue a **categoria de prioridade** da senha, sendo prioridade máxima para idoso 80+, depois preferencial (PCD e idoso 60+) e, por último, normal; havendo empate, vale a ordem de chegada. |
 | RN04 | Estados seguem sequência válida (não se atende quem não foi triado). |
 | RN05 | Reclassificação é monotônica: a urgência só aumenta, nunca diminui. |
 | RN06 | Casos não atendidos pela unidade (ex.: obstétricos, psiquiátricos) são encaminhados, não enfileirados. O encaminhamento é **registrado** (motivo, sinais vitais, unidade de destino, profissional responsável) por rastreabilidade legal. Pacientes do SUS dependem de **autorização da coordenação médica** (ex.: transplantados). |
@@ -170,7 +170,7 @@ para "em atendimento".
 | RF08 | UC07 | Regra de reclassificação monotônica (RN05) |
 | RF09 | UC04, UC08, UC09 | Estados do atendimento (enum StatusAtendimento) |
 | RF10 | UC06 | *Observer* (NotificadorClinico) |
-| RNF04 | — | *Repository* (AtendimentoRepository) |
+| RNF04 | (geral) | *Repository* (AtendimentoRepository) |
 | RF01, RF02 | UC01, UC02 | *Factory Method* (criação de Atendimento/Estratégia) |
 
 ---
