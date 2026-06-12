@@ -1,8 +1,8 @@
 package br.unibh.gestar.classificacao;
 
-import br.unibh.gestar.dominio.Atendimento;
-import br.unibh.gestar.dominio.NivelUrgencia;
-import br.unibh.gestar.dominio.SinaisVitais;
+import br.unibh.gestar.domain.MedicalCare;
+import br.unibh.gestar.domain.UrgencyLevel;
+import br.unibh.gestar.domain.VitalSigns;
 
 /**
  * Classificacao baseada no Protocolo de Manchester (versao simplificada).
@@ -14,59 +14,59 @@ import br.unibh.gestar.dominio.SinaisVitais;
 public class ClassificacaoManchester implements EstrategiaClassificacao {
 
     @Override
-    public NivelUrgencia classificar(Atendimento atendimento) {
-        SinaisVitais sv = atendimento.getSinaisVitais();
+    public UrgencyLevel classificar(MedicalCare atendimento) {
+        VitalSigns sv = atendimento.getVitalSigns();
         if (sv == null) {
             throw new IllegalStateException("Sinais vitais nao informados para a classificacao.");
         }
-        NivelUrgencia porSinais = classificarPorSinais(sv);
-        NivelUrgencia pisoQueixa = pisoPorQueixa(atendimento.getQueixaPrincipal());
+        UrgencyLevel porSinais = classificarPorSinais(sv);
+        UrgencyLevel pisoQueixa = pisoPorQueixa(atendimento.getMainComplaint());
         return maisUrgente(porSinais, pisoQueixa);
     }
 
-    private NivelUrgencia classificarPorSinais(SinaisVitais sv) {
-        if (sv.getSaturacao() < 85
-                || sv.getFrequenciaCardiaca() > 150 || sv.getFrequenciaCardiaca() < 40
-                || sv.getFrequenciaRespiratoria() > 35 || sv.getFrequenciaRespiratoria() < 8
-                || sv.getPressaoSistolica() > 220 || sv.getPressaoSistolica() < 70
-                || sv.getTemperatura() > 41.0) {
-            return NivelUrgencia.VERMELHO;
+    private UrgencyLevel classificarPorSinais(VitalSigns sv) {
+        if (sv.getOxygenSaturation() < 85
+                || sv.getHeartRate() > 150 || sv.getHeartRate() < 40
+                || sv.getRespiratoryRate() > 35 || sv.getRespiratoryRate() < 8
+                || sv.getSystolicPressure() > 220 || sv.getSystolicPressure() < 70
+                || sv.getTemperature() > 41.0) {
+            return UrgencyLevel.RED;
         }
-        if (sv.getSaturacao() < 91
-                || sv.getFrequenciaCardiaca() > 120
-                || sv.getFrequenciaRespiratoria() > 24
-                || sv.getPressaoSistolica() > 200
-                || sv.getTemperatura() >= 39.5
-                || sv.getEscalaDor() >= 8) {
-            return NivelUrgencia.LARANJA;
+        if (sv.getOxygenSaturation() < 91
+                || sv.getHeartRate() > 120
+                || sv.getRespiratoryRate() > 24
+                || sv.getSystolicPressure() > 200
+                || sv.getTemperature() >= 39.5
+                || sv.getPainScale() >= 8) {
+            return UrgencyLevel.ORANGE;
         }
-        if (sv.getSaturacao() < 95
-                || sv.getFrequenciaCardiaca() > 100
-                || sv.getTemperatura() >= 38.0
-                || sv.getEscalaDor() >= 4) {
-            return NivelUrgencia.AMARELO;
+        if (sv.getOxygenSaturation() < 95
+                || sv.getHeartRate() > 100
+                || sv.getTemperature() >= 38.0
+                || sv.getPainScale() >= 4) {
+            return UrgencyLevel.YELLOW;
         }
-        return NivelUrgencia.VERDE;
+        return UrgencyLevel.GREEN;
     }
 
     /**
      * RN08: piso de urgencia por queixa. Dor toracica e sempre, no minimo, urgente.
      */
-    private NivelUrgencia pisoPorQueixa(String queixa) {
+    private UrgencyLevel pisoPorQueixa(String queixa) {
         if (queixa == null) {
-            return NivelUrgencia.VERDE;
+            return UrgencyLevel.GREEN;
         }
         String q = queixa.toLowerCase();
         if (q.contains("torac") || q.contains("torác") || q.contains("peito")) {
-            return NivelUrgencia.AMARELO;
+            return UrgencyLevel.YELLOW;
         }
-        return NivelUrgencia.VERDE;
+        return UrgencyLevel.GREEN;
     }
 
     /**
      * Retorna o nivel mais urgente entre dois (menor prioridade = mais urgente).
      */
-    private NivelUrgencia maisUrgente(NivelUrgencia a, NivelUrgencia b) {
-        return a.getPrioridade() <= b.getPrioridade() ? a : b;
+    private UrgencyLevel maisUrgente(UrgencyLevel a, UrgencyLevel b) {
+        return a.getPriority() <= b.getPriority() ? a : b;
     }
 }

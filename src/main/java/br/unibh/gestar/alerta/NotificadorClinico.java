@@ -1,6 +1,6 @@
 package br.unibh.gestar.alerta;
 
-import br.unibh.gestar.dominio.Atendimento;
+import br.unibh.gestar.domain.MedicalCare;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class NotificadorClinico {
         observadores.add(observador);
     }
 
-    public void dispararAlerta(Atendimento atendimento) {
+    public void dispararAlerta(MedicalCare atendimento) {
         for (ObservadorAlerta observador : observadores) {
             observador.notificar(atendimento);
         }

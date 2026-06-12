@@ -1,8 +1,8 @@
 package br.unibh.gestar.classificacao;
 
-import br.unibh.gestar.dominio.Atendimento;
-import br.unibh.gestar.dominio.NivelUrgencia;
-import br.unibh.gestar.dominio.SinaisVitais;
+import br.unibh.gestar.domain.MedicalCare;
+import br.unibh.gestar.domain.UrgencyLevel;
+import br.unibh.gestar.domain.VitalSigns;
 
 /**
  * Classificacao simplificada, baseada apenas em saturacao e escala de dor.
@@ -12,17 +12,17 @@ import br.unibh.gestar.dominio.SinaisVitais;
 public class ClassificacaoSimples implements EstrategiaClassificacao {
 
     @Override
-    public NivelUrgencia classificar(Atendimento atendimento) {
-        SinaisVitais sv = atendimento.getSinaisVitais();
+    public UrgencyLevel classificar(MedicalCare atendimento) {
+        VitalSigns sv = atendimento.getVitalSigns();
         if (sv == null) {
             throw new IllegalStateException("Sinais vitais nao informados para a classificacao.");
         }
-        if (sv.getSaturacao() < 90 || sv.getEscalaDor() >= 8) {
-            return NivelUrgencia.LARANJA;
+        if (sv.getOxygenSaturation() < 90 || sv.getPainScale() >= 8) {
+            return UrgencyLevel.ORANGE;
         }
-        if (sv.getEscalaDor() >= 5) {
-            return NivelUrgencia.AMARELO;
+        if (sv.getPainScale() >= 5) {
+            return UrgencyLevel.YELLOW;
         }
-        return NivelUrgencia.VERDE;
+        return UrgencyLevel.GREEN;
     }
 }

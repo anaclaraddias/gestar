@@ -1,6 +1,6 @@
 package br.unibh.gestar.repositorio;
 
-import br.unibh.gestar.dominio.Atendimento;
+import br.unibh.gestar.domain.MedicalCare;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -15,20 +15,20 @@ import java.util.Optional;
  */
 public class AtendimentoRepositoryEmMemoria implements AtendimentoRepository {
 
-    private final Map<String, Atendimento> dados = new LinkedHashMap<>();
+    private final Map<String, MedicalCare> dados = new LinkedHashMap<>();
 
     @Override
-    public void salvar(Atendimento atendimento) {
+    public void salvar(MedicalCare atendimento) {
         dados.put(atendimento.getId(), atendimento);
     }
 
     @Override
-    public Optional<Atendimento> buscarPorId(String id) {
+    public Optional<MedicalCare> buscarPorId(String id) {
         return Optional.ofNullable(dados.get(id));
     }
 
     @Override
-    public List<Atendimento> listarTodos() {
+    public List<MedicalCare> listarTodos() {
         return new ArrayList<>(dados.values());
     }
 }

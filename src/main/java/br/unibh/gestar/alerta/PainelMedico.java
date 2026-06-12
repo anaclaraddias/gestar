@@ -1,6 +1,6 @@
 package br.unibh.gestar.alerta;
 
-import br.unibh.gestar.dominio.Atendimento;
+import br.unibh.gestar.domain.MedicalCare;
 
 /**
  * Observador que exibe o alerta clinico no painel medico.
@@ -9,10 +9,10 @@ import br.unibh.gestar.dominio.Atendimento;
 public class PainelMedico implements ObservadorAlerta {
 
     @Override
-    public void notificar(Atendimento atendimento) {
+    public void notificar(MedicalCare atendimento) {
         System.out.println("[ALERTA CLINICO] Caso critico na fila: "
-                + atendimento.getPaciente().getNome()
-                + " | Queixa: " + atendimento.getQueixaPrincipal()
-                + " | Nivel: " + atendimento.getNivel());
+                + atendimento.getPaciente().getName()
+                + " | Queixa: " + atendimento.getMainComplaint()
+                + " | Nivel: " + atendimento.getUrgencyLevel());
     }
 }

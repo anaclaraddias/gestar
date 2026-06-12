@@ -1,7 +1,7 @@
 package br.unibh.gestar.classificacao;
 
-import br.unibh.gestar.dominio.Atendimento;
-import br.unibh.gestar.dominio.NivelUrgencia;
+import br.unibh.gestar.domain.MedicalCare;
+import br.unibh.gestar.domain.UrgencyLevel;
 
 /**
  * Contrato de classificacao de risco (padrao Strategy).
@@ -9,5 +9,5 @@ import br.unibh.gestar.dominio.NivelUrgencia;
  */
 public interface EstrategiaClassificacao {
 
-    NivelUrgencia classificar(Atendimento atendimento);
+    UrgencyLevel classificar(MedicalCare atendimento);
 }

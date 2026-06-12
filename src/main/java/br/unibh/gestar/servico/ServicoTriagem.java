@@ -2,12 +2,12 @@ package br.unibh.gestar.servico;
 
 import br.unibh.gestar.alerta.NotificadorClinico;
 import br.unibh.gestar.classificacao.EstrategiaClassificacao;
-import br.unibh.gestar.dominio.Atendimento;
-import br.unibh.gestar.dominio.CategoriaPrioridade;
-import br.unibh.gestar.dominio.NivelUrgencia;
-import br.unibh.gestar.dominio.Paciente;
-import br.unibh.gestar.dominio.SinaisVitais;
-import br.unibh.gestar.dominio.StatusAtendimento;
+import br.unibh.gestar.domain.MedicalCare;
+import br.unibh.gestar.domain.PriorityCategory;
+import br.unibh.gestar.domain.UrgencyLevel;
+import br.unibh.gestar.domain.Patient;
+import br.unibh.gestar.domain.VitalSigns;
+import br.unibh.gestar.domain.MedicalCareStatus;
 import br.unibh.gestar.fila.GerenciadorFila;
 import br.unibh.gestar.repositorio.AtendimentoRepository;
 
@@ -37,21 +37,21 @@ public class ServicoTriagem {
      * Triagem de um paciente elegivel: classifica, persiste, enfileira e,
      * se for caso critico (Vermelho), dispara o alerta clinico (RN07).
      */
-    public Atendimento realizarTriagem(Paciente paciente, SinaisVitais sinais,
-                                       String queixa, CategoriaPrioridade categoria) {
-        Atendimento atendimento = new Atendimento(paciente, queixa, categoria);
-        atendimento.avancarStatus(StatusAtendimento.EM_TRIAGEM);
-        atendimento.setSinaisVitais(sinais);
+    public MedicalCare realizarTriagem(Patient paciente, VitalSigns sinais,
+                                       String queixa, PriorityCategory categoria) {
+        MedicalCare atendimento = new MedicalCare(paciente, queixa, categoria);
+        atendimento.advanceStatus(MedicalCareStatus.IN_TRIAGE);
+        atendimento.setVitalSigns(sinais);
 
-        NivelUrgencia nivel = estrategia.classificar(atendimento);
-        atendimento.definirClassificacao(nivel);
+        UrgencyLevel urgencyLevel = estrategia.classificar(atendimento);
+        atendimento.setClassification(urgencyLevel);
 
         repositorio.salvar(atendimento);
 
-        atendimento.avancarStatus(StatusAtendimento.NA_FILA);
+        atendimento.advanceStatus(MedicalCareStatus.IN_QUEUE);
         fila.adicionar(atendimento);
 
-        if (atendimento.ehCritico()) {
+        if (atendimento.isCritical()) {
             notificador.dispararAlerta(atendimento);
         }
         return atendimento;
@@ -61,11 +61,11 @@ public class ServicoTriagem {
      * Registra um paciente nao atendido pela unidade: guarda os dados, os sinais
      * e o encaminhamento (RN06), sem enfileirar.
      */
-    public Atendimento encaminhar(Paciente paciente, SinaisVitais sinais, String queixa,
-                                  CategoriaPrioridade categoria, String motivo, String unidadeDestino) {
-        Atendimento atendimento = new Atendimento(paciente, queixa, categoria);
-        atendimento.setSinaisVitais(sinais);
-        atendimento.marcarEncaminhado(motivo, unidadeDestino);
+    public MedicalCare encaminhar(Patient paciente, VitalSigns sinais, String queixa,
+                                  PriorityCategory categoria, String referralReason, String destinationUnit) {
+        MedicalCare atendimento = new MedicalCare(paciente, queixa, categoria);
+        atendimento.setVitalSigns(sinais);
+        atendimento.markReferred(referralReason, destinationUnit);
         repositorio.salvar(atendimento);
         return atendimento;
     }
@@ -76,12 +76,12 @@ public class ServicoTriagem {
      * dispara o alerta. A reordenacao na fila apos a mudanca de nivel fica
      * como evolucao futura; aqui o nivel e atualizado e o alerta disparado.
      */
-    public Atendimento reclassificar(Atendimento atendimento, SinaisVitais novosSinais) {
-        atendimento.setSinaisVitais(novosSinais);
-        NivelUrgencia novoNivel = estrategia.classificar(atendimento);
-        atendimento.reclassificar(novoNivel);
+    public MedicalCare reclassificar(MedicalCare atendimento, VitalSigns novosSinais) {
+        atendimento.setVitalSigns(novosSinais);
+        UrgencyLevel newUrgencyLevel = estrategia.classificar(atendimento);
+        atendimento.reclassify(newUrgencyLevel);
         repositorio.salvar(atendimento);
-        if (atendimento.ehCritico()) {
+        if (atendimento.isCritical()) {
             notificador.dispararAlerta(atendimento);
         }
         return atendimento;
@@ -91,10 +91,10 @@ public class ServicoTriagem {
      * Chama o proximo paciente da fila para atendimento, ou null se a fila
      * estiver vazia.
      */
-    public Atendimento chamarProximo() {
-        Atendimento atendimento = fila.proximo();
+    public MedicalCare chamarProximo() {
+        MedicalCare atendimento = fila.proximo();
         if (atendimento != null) {
-            atendimento.avancarStatus(StatusAtendimento.EM_ATENDIMENTO);
+            atendimento.advanceStatus(MedicalCareStatus.IN_MEDICAL_CARE);
             repositorio.salvar(atendimento);
         }
         return atendimento;
@@ -103,8 +103,8 @@ public class ServicoTriagem {
     /**
      * Finaliza um atendimento.
      */
-    public void finalizar(Atendimento atendimento) {
-        atendimento.avancarStatus(StatusAtendimento.FINALIZADO);
+    public void finalizar(MedicalCare atendimento) {
+        atendimento.advanceStatus(MedicalCareStatus.FINISHED);
         repositorio.salvar(atendimento);
     }
 }

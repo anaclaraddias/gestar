@@ -1,9 +1,9 @@
 package br.unibh.gestar.repositorio;
 
-import br.unibh.gestar.dominio.Atendimento;
-
 import java.util.List;
 import java.util.Optional;
+
+import br.unibh.gestar.domain.MedicalCare;
 
 /**
  * Contrato de persistencia de atendimentos (padrao Repository).
@@ -13,9 +13,9 @@ import java.util.Optional;
  */
 public interface AtendimentoRepository {
 
-    void salvar(Atendimento atendimento);
+    void salvar(MedicalCare atendimento);
 
-    Optional<Atendimento> buscarPorId(String id);
+    Optional<MedicalCare> buscarPorId(String id);
 
-    List<Atendimento> listarTodos();
+    List<MedicalCare> listarTodos();
 }

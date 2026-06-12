@@ -1,6 +1,6 @@
 package br.unibh.gestar.alerta;
 
-import br.unibh.gestar.dominio.Atendimento;
+import br.unibh.gestar.domain.MedicalCare;
 
 /**
  * Observador de alertas clinicos (padrao Observer).
@@ -8,5 +8,5 @@ import br.unibh.gestar.dominio.Atendimento;
  */
 public interface ObservadorAlerta {
 
-    void notificar(Atendimento atendimento);
+    void notificar(MedicalCare atendimento);
 }

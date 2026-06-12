@@ -1,9 +1,9 @@
 package br.unibh.gestar.fila;
 
-import br.unibh.gestar.dominio.Atendimento;
-
 import java.util.Comparator;
 import java.util.PriorityQueue;
+
+import br.unibh.gestar.domain.MedicalCare;
 
 /**
  * Fila priorizada de atendimentos. A ordem segue tres criterios, nesta sequencia:
@@ -15,20 +15,20 @@ import java.util.PriorityQueue;
  */
 public class GerenciadorFila {
 
-    private static final Comparator<Atendimento> ORDEM_PRIORIDADE =
+    private static final Comparator<MedicalCare> ORDEM_PRIORIDADE =
             Comparator
-                    .comparingInt((Atendimento a) -> a.getNivel().getPrioridade())
+                    .comparingInt((MedicalCare a) -> a.getUrgencyLevel().getPriority())
                     .thenComparing(Comparator.comparingInt(
-                            (Atendimento a) -> a.getCategoriaPrioridade().getPeso()).reversed())
-                    .thenComparing(Atendimento::getDataHoraChegada);
+                            (MedicalCare a) -> a.getPriorityCategory().getWeight()).reversed())
+                    .thenComparing(MedicalCare::getArrivalDateTime);
 
-    private final PriorityQueue<Atendimento> fila = new PriorityQueue<>(ORDEM_PRIORIDADE);
+    private final PriorityQueue<MedicalCare> fila = new PriorityQueue<>(ORDEM_PRIORIDADE);
 
     /**
      * Adiciona um atendimento ja classificado a fila.
      */
-    public void adicionar(Atendimento atendimento) {
-        if (atendimento.getNivel() == null) {
+    public void adicionar(MedicalCare atendimento) {
+        if (atendimento.getUrgencyLevel() == null) {
             throw new IllegalStateException("Atendimento sem classificacao nao pode entrar na fila.");
         }
         fila.add(atendimento);
@@ -37,14 +37,14 @@ public class GerenciadorFila {
     /**
      * Remove e retorna o proximo atendimento (o mais prioritario), ou null se vazia.
      */
-    public Atendimento proximo() {
+    public MedicalCare proximo() {
         return fila.poll();
     }
 
     /**
      * Retorna o proximo sem remover, ou null se a fila estiver vazia.
      */
-    public Atendimento espiar() {
+    public MedicalCare espiar() {
         return fila.peek();
     }
 
