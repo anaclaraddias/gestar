@@ -1,30 +1,30 @@
-package br.unibh.gestar.classificacao;
+package br.unibh.gestar.classification;
 
 import br.unibh.gestar.domain.MedicalCare;
 import br.unibh.gestar.domain.UrgencyLevel;
 import br.unibh.gestar.domain.VitalSigns;
 
 /**
- * Classificacao baseada no Protocolo de Manchester (versao simplificada).
- * Combina dois fatores e usa o mais urgente entre eles:
- *  1) discriminadores por sinais vitais;
- *  2) piso de urgencia por queixa (RN08): certas queixas impoem urgencia
- *     minima independentemente dos sinais. Ex.: dor toracica e no minimo urgente.
+ * Classification based on Manchester Protocol (simplified version).
+ * Combines two factors and uses the most urgent between them:
+ *  1) discriminators by vital signs;
+ *  2) floor of urgency by complaint (RN08): certain complaints impose
+ *     minimum urgency regardless of vital signs. Ex.: chest pain is at least urgent.
  */
-public class ClassificacaoManchester implements EstrategiaClassificacao {
+public class ManchesterClassification implements ClassificationStrategy {
 
     @Override
-    public UrgencyLevel classificar(MedicalCare atendimento) {
-        VitalSigns sv = atendimento.getVitalSigns();
+    public UrgencyLevel classify(MedicalCare medicalCare) {
+        VitalSigns sv = medicalCare.getVitalSigns();
         if (sv == null) {
-            throw new IllegalStateException("Sinais vitais nao informados para a classificacao.");
+            throw new IllegalStateException("Vital signs not informed for classification.");
         }
-        UrgencyLevel porSinais = classificarPorSinais(sv);
-        UrgencyLevel pisoQueixa = pisoPorQueixa(atendimento.getMainComplaint());
-        return maisUrgente(porSinais, pisoQueixa);
+        UrgencyLevel byVitalSigns = classifyByVitalSigns(sv);
+        UrgencyLevel complaintFloor = floorByComplaint(medicalCare.getMainComplaint());
+        return mostUrgent(byVitalSigns, complaintFloor);
     }
 
-    private UrgencyLevel classificarPorSinais(VitalSigns sv) {
+    private UrgencyLevel classifyByVitalSigns(VitalSigns sv) {
         if (sv.getOxygenSaturation() < 85
                 || sv.getHeartRate() > 150 || sv.getHeartRate() < 40
                 || sv.getRespiratoryRate() > 35 || sv.getRespiratoryRate() < 8
@@ -50,23 +50,23 @@ public class ClassificacaoManchester implements EstrategiaClassificacao {
     }
 
     /**
-     * RN08: piso de urgencia por queixa. Dor toracica e sempre, no minimo, urgente.
+     * RN08: floor of urgency by complaint. Chest pain is always, at least, urgent.
      */
-    private UrgencyLevel pisoPorQueixa(String queixa) {
-        if (queixa == null) {
+    private UrgencyLevel floorByComplaint(String complaint) {
+        if (complaint == null) {
             return UrgencyLevel.GREEN;
         }
-        String q = queixa.toLowerCase();
-        if (q.contains("torac") || q.contains("torác") || q.contains("peito")) {
+        String q = complaint.toLowerCase();
+        if (q.contains("chest") || q.contains("thorac") || q.contains("breast")) {
             return UrgencyLevel.YELLOW;
         }
         return UrgencyLevel.GREEN;
     }
 
     /**
-     * Retorna o nivel mais urgente entre dois (menor prioridade = mais urgente).
+     * Returns the most urgent level between two (lower priority = more urgent).
      */
-    private UrgencyLevel maisUrgente(UrgencyLevel a, UrgencyLevel b) {
+    private UrgencyLevel mostUrgent(UrgencyLevel a, UrgencyLevel b) {
         return a.getPriority() <= b.getPriority() ? a : b;
     }
 }
