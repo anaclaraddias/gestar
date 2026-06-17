@@ -3,19 +3,17 @@ package br.unibh.gestar.service;
 import br.unibh.gestar.alert.ClinicalNotifier;
 import br.unibh.gestar.classification.ClassificationStrategy;
 import br.unibh.gestar.domain.MedicalCare;
+import br.unibh.gestar.domain.MedicalCareStatus;
+import br.unibh.gestar.domain.Patient;
 import br.unibh.gestar.domain.PriorityCategory;
 import br.unibh.gestar.domain.UrgencyLevel;
-import br.unibh.gestar.domain.Patient;
 import br.unibh.gestar.domain.VitalSigns;
-import br.unibh.gestar.domain.MedicalCareStatus;
 import br.unibh.gestar.queue.QueueManager;
 import br.unibh.gestar.repository.MedicalCareRepository;
 
-/**
- * Orchestrates the triage flow: creates the medical care, classifies the risk,
- * persists, queues and triggers alerts. Depends only on abstractions
- * (the classification strategy and the repository), which materializes the DIP.
- */
+import java.util.List;
+import java.util.Optional;
+
 public class TriageService {
 
     private final ClassificationStrategy strategy;
@@ -23,88 +21,99 @@ public class TriageService {
     private final QueueManager queue;
     private final ClinicalNotifier notifier;
 
-    public TriageService(ClassificationStrategy strategy,
-                          MedicalCareRepository repository,
-                          QueueManager queue,
-                          ClinicalNotifier notifier) {
+    public TriageService(ClassificationStrategy strategy, MedicalCareRepository repository,
+                         QueueManager queue, ClinicalNotifier notifier) {
         this.strategy = strategy;
         this.repository = repository;
         this.queue = queue;
         this.notifier = notifier;
     }
 
-    /**
-     * Triage of an eligible patient: classifies, persists, queues and,
-     * if it is a critical case (Red), triggers the clinical alert (RN07).
-     */
     public MedicalCare performTriage(Patient patient, VitalSigns vitalSigns,
-                                       String complaint, PriorityCategory category) {
-        MedicalCare medicalCare = new MedicalCare(patient, complaint, category);
-        medicalCare.advanceStatus(MedicalCareStatus.IN_TRIAGE);
-        medicalCare.setVitalSigns(vitalSigns);
+                                     String complaint, PriorityCategory category) {
+        requireComplaint(complaint);
+        MedicalCare care = new MedicalCare(patient, complaint, category);
+        care.advanceStatus(MedicalCareStatus.IN_TRIAGE);
+        care.setVitalSigns(vitalSigns);
 
-        UrgencyLevel urgencyLevel = strategy.classify(medicalCare);
-        medicalCare.setClassification(urgencyLevel);
+        care.setClassification(strategy.classify(care));
+        repository.save(care);
 
-        repository.save(medicalCare);
+        care.advanceStatus(MedicalCareStatus.IN_QUEUE);
+        queue.add(care);
 
-        medicalCare.advanceStatus(MedicalCareStatus.IN_QUEUE);
-        queue.add(medicalCare);
-
-        if (medicalCare.isCritical()) {
-            notifier.triggerAlert(medicalCare);
+        if (care.isCritical()) {
+            notifier.triggerAlert(care);
         }
-        return medicalCare;
+        return care;
     }
 
-    /**
-     * Registers a patient not seen by the unit: stores the data, vital signs
-     * and referral (RN06), without queuing.
-     */
     public MedicalCare refer(Patient patient, VitalSigns vitalSigns, String complaint,
-                                  PriorityCategory category, String referralReason, String destinationUnit) {
-        MedicalCare medicalCare = new MedicalCare(patient, complaint, category);
-        medicalCare.setVitalSigns(vitalSigns);
-        medicalCare.markReferred(referralReason, destinationUnit);
-        repository.save(medicalCare);
-        return medicalCare;
+                             PriorityCategory category, String referralReason, String destinationUnit) {
+        requireComplaint(complaint);
+        require(referralReason, "referralReason");
+        require(destinationUnit, "destinationUnit");
+        MedicalCare care = new MedicalCare(patient, complaint, category);
+        care.setVitalSigns(vitalSigns);
+        care.markReferred(referralReason, destinationUnit);
+        repository.save(care);
+        return care;
     }
 
-    /**
-     * Re-evaluates a medical care with new vital signs. Applies the monotonic rule
-     * (RN05): urgency only increases, never decreases. If it becomes critical,
-     * triggers the alert. Queue reordering after level change is left
-     * as future evolution; here the level is updated and alert is triggered.
-     */
-    public MedicalCare reclassify(MedicalCare medicalCare, VitalSigns newVitalSigns) {
-        medicalCare.setVitalSigns(newVitalSigns);
-        UrgencyLevel newUrgencyLevel = strategy.classify(medicalCare);
-        medicalCare.reclassify(newUrgencyLevel);
-        repository.save(medicalCare);
-        if (medicalCare.isCritical()) {
-            notifier.triggerAlert(medicalCare);
+    public MedicalCare reclassify(String id, VitalSigns newVitalSigns) {
+        MedicalCare care = findById(id);
+        care.setVitalSigns(newVitalSigns);
+        care.reclassify(strategy.classify(care));
+        repository.save(care);
+        if (care.isCritical()) {
+            notifier.triggerAlert(care);
         }
-        return medicalCare;
+        return care;
     }
 
-    /**
-     * Calls the next patient in queue for medical care, or null if the queue
-     * is empty.
-     */
-    public MedicalCare callNext() {
-        MedicalCare medicalCare = queue.next();
-        if (medicalCare != null) {
-            medicalCare.advanceStatus(MedicalCareStatus.IN_MEDICAL_CARE);
-            repository.save(medicalCare);
+    public Optional<MedicalCare> callNext() {
+        MedicalCare care = queue.next();
+        if (care == null) {
+            return Optional.empty();
         }
-        return medicalCare;
+        care.advanceStatus(MedicalCareStatus.IN_MEDICAL_CARE);
+        repository.save(care);
+        return Optional.of(care);
     }
 
-    /**
-     * Finishes a medical care.
-     */
-    public void finalize(MedicalCare medicalCare) {
-        medicalCare.advanceStatus(MedicalCareStatus.FINISHED);
-        repository.save(medicalCare);
+    public MedicalCare finish(String id) {
+        MedicalCare care = findById(id);
+        care.advanceStatus(MedicalCareStatus.FINISHED);
+        repository.save(care);
+        return care;
+    }
+
+    public MedicalCare findById(String id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new MedicalCareNotFoundException(id));
+    }
+
+    public List<MedicalCare> listAll() {
+        return repository.listAll();
+    }
+    
+    public QueueStatus queueStatus() {
+        return new QueueStatus(
+                queue.size(UrgencyLevel.RED),
+                queue.size(UrgencyLevel.ORANGE),
+                queue.size(UrgencyLevel.YELLOW),
+                queue.size(UrgencyLevel.GREEN),
+                queue.size(),
+                queue.peek());
+    }
+
+    private static void requireComplaint(String complaint) {
+        require(complaint, "complaint");
+    }
+
+    private static void require(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Missing required field '" + field + "'");
+        }
     }
 }

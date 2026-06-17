@@ -29,6 +29,34 @@ public class MedicalCare {
         this.status = MedicalCareStatus.WAITING_FOR_TRIAGE;
     }
 
+    private MedicalCare(String id, Patient patient, String mainComplaint,
+                        PriorityCategory priorityCategory, LocalDateTime arrivalDateTime) {
+        this.id = id;
+        this.patient = patient;
+        this.mainComplaint = mainComplaint;
+        this.priorityCategory = priorityCategory;
+        this.arrivalDateTime = arrivalDateTime;
+    }
+
+    /**
+     * Rebuilds a medical care from stored data (e.g. a database row), preserving
+     * its original id and arrival time. Used by repositories to rehydrate; the
+     * public constructor is for brand-new care that generates its own id.
+     */
+    public static MedicalCare fromPersistence(String id, Patient patient, String mainComplaint,
+                                              PriorityCategory priorityCategory, LocalDateTime arrivalDateTime,
+                                              VitalSigns vitalSigns, UrgencyLevel urgencyLevel,
+                                              MedicalCareStatus status, String referralReason,
+                                              String destinationUnit) {
+        MedicalCare care = new MedicalCare(id, patient, mainComplaint, priorityCategory, arrivalDateTime);
+        care.vitalSigns = vitalSigns;
+        care.urgencyLevel = urgencyLevel;
+        care.status = status;
+        care.referralReason = referralReason;
+        care.destinationUnit = destinationUnit;
+        return care;
+    }
+
     public void setClassification(UrgencyLevel urgencyLevel) {
         this.urgencyLevel = urgencyLevel;
     }
@@ -61,6 +89,12 @@ public class MedicalCare {
         return id;
     }
 
+    public Patient getPatient() {
+        return patient;
+    }
+
+    /** @deprecated use {@link #getPatient()}; kept for backward compatibility. */
+    @Deprecated
     public Patient getPaciente() {
         return patient;
     }

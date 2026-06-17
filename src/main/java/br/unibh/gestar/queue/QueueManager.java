@@ -1,58 +1,62 @@
 package br.unibh.gestar.queue;
 
+import br.unibh.gestar.domain.MedicalCare;
+import br.unibh.gestar.domain.UrgencyLevel;
+
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-import br.unibh.gestar.domain.MedicalCare;
-
-/**
- * Prioritized queue of medical care. The order follows three criteria, in this sequence:
- *  1) urgency color, from most urgent to least (RN01: Red first);
- *  2) priority category of the token (RN03: 80+ elderly before disabled/60+ elderly,
- *     which comes before normal);
- *  3) order of arrival, oldest first.
- * It is the heart of the system and the main target of tests.
- */
 public class QueueManager {
 
-    private static final Comparator<MedicalCare> PRIORITY_ORDER =
+    private static final Comparator<MedicalCare> ORDER_WITHIN_QUEUE =
             Comparator
-                    .comparingInt((MedicalCare a) -> a.getUrgencyLevel().getPriority())
-                    .thenComparing(Comparator.comparingInt(
-                            (MedicalCare a) -> a.getPriorityCategory().getWeight()).reversed())
+                    .comparingInt((MedicalCare a) -> a.getPriorityCategory().getWeight())
+                    .reversed()
                     .thenComparing(MedicalCare::getArrivalDateTime);
 
-    private final PriorityQueue<MedicalCare> queue = new PriorityQueue<>(PRIORITY_ORDER);
+    private final PriorityQueue<MedicalCare> redQueue = new PriorityQueue<>(ORDER_WITHIN_QUEUE);
+    private final PriorityQueue<MedicalCare> orangeQueue = new PriorityQueue<>(ORDER_WITHIN_QUEUE);
+    private final PriorityQueue<MedicalCare> yellowQueue = new PriorityQueue<>(ORDER_WITHIN_QUEUE);
+    private final PriorityQueue<MedicalCare> greenQueue = new PriorityQueue<>(ORDER_WITHIN_QUEUE);
 
-    /**
-     * Adds a classified medical care to the queue.
-     */
     public void add(MedicalCare medicalCare) {
         if (medicalCare.getUrgencyLevel() == null) {
             throw new IllegalStateException("Medical care without classification cannot enter the queue.");
         }
-        queue.add(medicalCare);
+        queueOf(medicalCare.getUrgencyLevel()).add(medicalCare);
     }
 
-    /**
-     * Removes and returns the next medical care (the most prioritary), or null if empty.
-     */
     public MedicalCare next() {
-        return queue.poll();
+        UrgencyLevel level = levelToServe();
+        return level == null ? null : queueOf(level).poll();
     }
 
-    /**
-     * Returns the next without removing, or null if the queue is empty.
-     */
     public MedicalCare peek() {
-        return queue.peek();
+        UrgencyLevel level = levelToServe();
+        return level == null ? null : queueOf(level).peek();
     }
 
     public int size() {
-        return queue.size();
+        return redQueue.size() + orangeQueue.size() + yellowQueue.size() + greenQueue.size();
+    }
+
+    public int size(UrgencyLevel level) {
+        return queueOf(level).size();
     }
 
     public boolean isEmpty() {
-        return queue.isEmpty();
+        return redQueue.isEmpty() && orangeQueue.isEmpty()
+                && yellowQueue.isEmpty() && greenQueue.isEmpty();
+    }
+
+    private UrgencyLevel levelToServe() {
+        return QueueUtils.levelToServe(LocalDateTime.now(),
+                redQueue, orangeQueue, yellowQueue, greenQueue);
+    }
+
+    private PriorityQueue<MedicalCare> queueOf(UrgencyLevel level) {
+        return QueueUtils.selectQueue(level,
+                redQueue, orangeQueue, yellowQueue, greenQueue);
     }
 }

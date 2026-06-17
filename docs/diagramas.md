@@ -182,6 +182,8 @@ classDiagram
 | `ObservadorAlerta` / `PainelMedico` | Reagem a casos críticos | **Observer** (comportamental) |
 | `NotificadorClinico` | Dispara alertas aos observadores | **Observer** (Subject) |
 | `ServicoTriagem` | Orquestra triagem → fila → alerta | Depende de interfaces (DIP, SRP) |
+| `ApiServer`, `TriageController` | Camada de interface: expõe as rotas e fala só com o `TriageService` (sem tocar repositório/fila) | Front Controller (SRP, DIP) |
+| `CareMapper`, `dto/*` | Converte DTO ↔ domínio e valida o formato da entrada | **Mapper** / DTO (SRP) |
 
 **Coração testável:** `GerenciadorFila`. Use `PriorityQueue` com um `Comparator` que
 ordena **(1)** por `NivelUrgencia.prioridade` (Vermelho mais urgente), **(2)** por
@@ -192,14 +194,21 @@ ordena **(1)** por `NivelUrgencia.prioridade` (Vermelho mais urgente), **(2)** p
 
 ```
 src/main/java/br/unibh/gestar/
-├── domain/         Patient, MedicalCare, VitalSigns, UrgencyLevel, MedicalCareStatus
+├── domain/         Patient, MedicalCare, VitalSigns, UrgencyLevel, PriorityCategory, MedicalCareStatus
 ├── classification/ ClassificationStrategy, ManchesterClassification, SimpleClassification,
 │                   ProtocolType, ClassificationStrategyFactory
-├── queue/          QueueManager
-├── repository/     MedicalCareRepository, MedicalCareRepositoryInMemory
+├── queue/          QueueManager, QueueUtils
+├── repository/     MedicalCareRepository (contrato), MedicalCareRepositoryInMemory
+├── infra/          PostgresConnection, PostgresMedicalCareRepository
 ├── alert/          AlertObserver, MedicalPanel, ClinicalNotifier
-├── service/        TriageService
-└── Main.java       (demonstração do fluxo)
+├── service/        TriageService, QueueStatus, MedicalCareNotFoundException
+├── interfaces/     camada de interface/apresentação (API HTTP — Javalin)
+│   ├── ApiServer              sobe o servidor e mapeia exceções → status HTTP
+│   ├── controller/            TriageController (fala só com o TriageService)
+│   ├── mapper/                CareMapper (converte DTO ↔ domínio, valida formato)
+│   └── dto/                   CareRequest, CareResponse, PatientResponse,
+│                              VitalsResponse, QueueResponse
+└── Main.java       bootstrap: monta as dependências e sobe a API
 src/test/java/br/unibh/gestar/
 ├── queue/          QueueManagerTest
 ├── classification/ ManchesterClassificationTest
