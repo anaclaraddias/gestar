@@ -3,6 +3,7 @@ package br.unibh.gestar.interfaces;
 import br.unibh.gestar.interfaces.controller.TriageController;
 import br.unibh.gestar.interfaces.routes.HealthRoutes;
 import br.unibh.gestar.interfaces.routes.PatientRoutes;
+import br.unibh.gestar.interfaces.routes.TriageRoutes;
 import br.unibh.gestar.service.MedicalCareNotFoundException;
 import br.unibh.gestar.service.PatientService;
 import br.unibh.gestar.service.TriageService;
@@ -26,8 +27,7 @@ public class ApiServer {
 
         HealthRoutes.register(app);
         PatientRoutes.register(app, patientService);
-
-        new TriageController(service).register(app);
+        TriageRoutes.register(app, service);
 
         app.exception(MedicalCareNotFoundException.class, (e, ctx) -> ctx.status(404).json(Map.of("error", e.getMessage())));
         app.exception(IllegalArgumentException.class, (e, ctx) -> ctx.status(400).json(Map.of("error", e.getMessage())));

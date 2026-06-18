@@ -21,7 +21,7 @@ public class MedicalCare {
         String mainComplaint,
         PriorityCategory priorityCategory
     ) {
-        this.id = UUID.randomUUID().toString().substring(0, 8);
+        this.id = UUID.randomUUID().toString();
         this.patient = patient;
         this.mainComplaint = mainComplaint;
         this.priorityCategory = priorityCategory;
