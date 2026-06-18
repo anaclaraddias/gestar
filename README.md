@@ -107,7 +107,7 @@ curl -X POST http://localhost:8080/medical-care \
     "name": "Maria Silva",
     "birthDate": "1990-05-12",
     "complaint": "Dor no peito",
-    "category": "ADULT",
+    "category": "NORMAL",
     "systolic": 140,
     "diastolic": 90,
     "heartRate": 110,
@@ -171,9 +171,88 @@ curl -X POST http://localhost:8080/referral \
     "name": "Maria Silva",
     "birthDate": "1990-05-12",
     "complaint": "Dor persistente",
-    "category": "ADULT",
+    "category": "NORMAL",
     "referralReason": "Necessita avaliação especializada",
     "destinationUnit": "Cardiologia"
+  }'
+```
+
+#### Exemplos por fila
+Os exemplos abaixo usam `category: NORMAL`, porque a fila é definida principalmente pelos sinais vitais e pela queixa.
+
+Fila `RED`:
+```bash
+curl -X POST http://localhost:8080/medical-care \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Paciente Vermelho",
+    "birthDate": "1985-01-10",
+    "complaint": "Falta de ar intensa",
+    "category": "NORMAL",
+    "systolic": 60,
+    "diastolic": 40,
+    "heartRate": 160,
+    "respiratoryRate": 36,
+    "temperature": 37.0,
+    "spo2": 84,
+    "pain": 10
+  }'
+```
+
+Fila `ORANGE`:
+```bash
+curl -X POST http://localhost:8080/medical-care \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Paciente Laranja",
+    "birthDate": "1990-02-15",
+    "complaint": "Dor forte no peito",
+    "category": "NORMAL",
+    "systolic": 130,
+    "diastolic": 85,
+    "heartRate": 125,
+    "respiratoryRate": 20,
+    "temperature": 38.2,
+    "spo2": 90,
+    "pain": 8
+  }'
+```
+
+Fila `YELLOW`:
+```bash
+curl -X POST http://localhost:8080/medical-care \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Paciente Amarelo",
+    "birthDate": "1995-03-20",
+    "complaint": "Dor de cabeça",
+    "category": "NORMAL",
+    "systolic": 120,
+    "diastolic": 80,
+    "heartRate": 105,
+    "respiratoryRate": 18,
+    "temperature": 38.0,
+    "spo2": 94,
+    "pain": 5
+  }'
+```
+
+Fila `GREEN`:
+```bash
+curl -X POST http://localhost:8080/medical-care \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Paciente Verde",
+    "birthDate": "2000-04-25",
+    "complaint": "Mal-estar leve",
+    "category": "NORMAL",
+    "systolic": 118,
+    "diastolic": 76,
+    "heartRate": 78,
+    "respiratoryRate": 16,
+    "temperature": 36.7,
+    "spo2": 98,
+    "pain": 1
   }'
 ```
 
