@@ -10,7 +10,7 @@ public class Patient {
     private final LocalDate birthDate;
 
     public Patient(String name, LocalDate birthDate) {
-        this.id = UUID.randomUUID().toString().substring(0, 8);
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.birthDate = birthDate;
     }
