@@ -1,10 +1,9 @@
-package br.unibh.gestar.interfaces;
+package br.unibh.gestar.entrypoint;
 
-import br.unibh.gestar.interfaces.routes.HealthRoutes;
-import br.unibh.gestar.interfaces.routes.PatientRoutes;
-import br.unibh.gestar.interfaces.routes.MedicalCareRoutes;
-import br.unibh.gestar.service.MedicalCareNotFoundException;
 import br.unibh.gestar.service.PatientService;
+import br.unibh.gestar.entrypoint.routes.HealthRoutes;
+import br.unibh.gestar.entrypoint.routes.MedicalCareRoutes;
+import br.unibh.gestar.entrypoint.routes.PatientRoutes;
 import br.unibh.gestar.service.MedicalCareService;
 
 import io.javalin.Javalin;
@@ -28,7 +27,7 @@ public class ApiServer {
         PatientRoutes.register(app, patientService);
         MedicalCareRoutes.register(app, service);
 
-        app.exception(MedicalCareNotFoundException.class, (e, ctx) -> ctx.status(404).json(Map.of("error", e.getMessage())));
+        app.exception(MedicalCareService.MedicalCareNotFoundException.class, (e, ctx) -> ctx.status(404).json(Map.of("error", e.getMessage())));
         app.exception(IllegalArgumentException.class, (e, ctx) -> ctx.status(400).json(Map.of("error", e.getMessage())));
 
         app.start(port);

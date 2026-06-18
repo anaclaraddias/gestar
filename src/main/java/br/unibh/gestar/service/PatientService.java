@@ -1,18 +1,18 @@
 package br.unibh.gestar.service;
 
 import br.unibh.gestar.domain.Patient;
-import br.unibh.gestar.interfaces.dto.PatientRequest;
-import br.unibh.gestar.interfaces.dto.PatientResponse;
-import br.unibh.gestar.repository.PatientRepository;
+import br.unibh.gestar.entrypoint.dto.PatientRequest;
+import br.unibh.gestar.entrypoint.dto.PatientResponse;
+import br.unibh.gestar.contract.PatientRepositoryContract;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class PatientService {
-    private final PatientRepository repository;
+    private final PatientRepositoryContract repository;
 
-    public PatientService(PatientRepository repository) {
+    public PatientService(PatientRepositoryContract repository) {
         this.repository = repository;
     }
 

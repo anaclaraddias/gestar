@@ -1,6 +1,6 @@
-package br.unibh.gestar.interfaces.routes;
+package br.unibh.gestar.entrypoint.routes;
 
-import br.unibh.gestar.interfaces.controller.PatientController;
+import br.unibh.gestar.entrypoint.controller.PatientController;
 import br.unibh.gestar.service.PatientService;
 
 import io.javalin.Javalin;

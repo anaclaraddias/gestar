@@ -1,4 +1,4 @@
-package br.unibh.gestar.interfaces.routes;
+package br.unibh.gestar.entrypoint.routes;
 
 import io.javalin.Javalin;
 import br.unibh.gestar.infra.PostgresConnection;

@@ -1,7 +1,7 @@
-package br.unibh.gestar.interfaces.controller;
+package br.unibh.gestar.entrypoint.controller;
 
-import br.unibh.gestar.interfaces.dto.CareRequest;
-import br.unibh.gestar.interfaces.dto.CareResponse;
+import br.unibh.gestar.entrypoint.dto.MedicalCareRequest;
+import br.unibh.gestar.entrypoint.dto.MedicalCareResponse;
 import br.unibh.gestar.service.MedicalCareService;
 
 import io.javalin.http.Context;
@@ -16,15 +16,15 @@ public class MedicalCareController {
     }
 
     public void create(Context ctx) {
-        CareRequest req = body(ctx);
-        CareResponse care = service.create(req);
+        MedicalCareRequest req = body(ctx);
+        MedicalCareResponse care = service.create(req);
         
         ctx.status(201).json(care);
     }
 
     public void refer(Context ctx) {
-        CareRequest req = body(ctx);
-        CareResponse care = service.refer(req);
+        MedicalCareRequest req = body(ctx);
+        MedicalCareResponse care = service.refer(req);
         
         ctx.status(201).json(care);
     }
@@ -39,7 +39,7 @@ public class MedicalCareController {
 
     public void update(Context ctx) {
         String id = ctx.pathParam("id");
-        CareRequest req = body(ctx);
+        MedicalCareRequest req = body(ctx);
         
         ctx.json(service.update(id, req));
     }
@@ -55,9 +55,9 @@ public class MedicalCareController {
         );
     }
 
-    private static CareRequest body(Context ctx) {
+    private static MedicalCareRequest body(Context ctx) {
         try {
-            return ctx.bodyAsClass(CareRequest.class);
+            return ctx.bodyAsClass(MedicalCareRequest.class);
         } catch (Exception e) {
             throw new IllegalArgumentException("Malformed JSON request body");
         }

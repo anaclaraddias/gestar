@@ -1,6 +1,6 @@
-package br.unibh.gestar.interfaces.controller;
+package br.unibh.gestar.entrypoint.controller;
 
-import br.unibh.gestar.interfaces.dto.PatientRequest;
+import br.unibh.gestar.entrypoint.dto.PatientRequest;
 import br.unibh.gestar.service.PatientService;
 
 import io.javalin.http.Context;

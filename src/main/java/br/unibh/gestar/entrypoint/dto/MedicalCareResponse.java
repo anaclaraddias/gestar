@@ -1,6 +1,6 @@
-package br.unibh.gestar.interfaces.dto;
+package br.unibh.gestar.entrypoint.dto;
 
-public record CareResponse(
+public record MedicalCareResponse(
         String id,
         PatientResponse patient,
         String complaint,
@@ -11,5 +11,5 @@ public record CareResponse(
         String arrivalDateTime,
         VitalsResponse vitalSigns,
         String referralReason,
-        String destinationUnit) {
-}
+        String destinationUnit
+) {}

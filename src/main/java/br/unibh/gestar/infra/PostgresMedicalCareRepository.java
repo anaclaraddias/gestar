@@ -6,7 +6,7 @@ import br.unibh.gestar.domain.Patient;
 import br.unibh.gestar.domain.PriorityCategory;
 import br.unibh.gestar.domain.UrgencyLevel;
 import br.unibh.gestar.domain.VitalSigns;
-import br.unibh.gestar.repository.MedicalCareRepository;
+import br.unibh.gestar.contract.MedicalCareRepositoryContract;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class PostgresMedicalCareRepository implements MedicalCareRepository {
+public class PostgresMedicalCareRepository implements MedicalCareRepositoryContract {
 
     private final Map<String, MedicalCare> identityMap = new LinkedHashMap<>();
 

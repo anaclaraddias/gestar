@@ -2,15 +2,15 @@ package br.unibh.gestar;
 
 import br.unibh.gestar.alert.ClinicalNotifier;
 import br.unibh.gestar.alert.MedicalPanel;
-import br.unibh.gestar.interfaces.ApiServer;
 import br.unibh.gestar.classification.ClassificationStrategy;
 import br.unibh.gestar.classification.ClassificationStrategyFactory;
 import br.unibh.gestar.classification.ProtocolType;
+import br.unibh.gestar.entrypoint.ApiServer;
 import br.unibh.gestar.infra.PostgresMedicalCareRepository;
 import br.unibh.gestar.infra.PostgresPatientRepository;
 import br.unibh.gestar.queue.QueueManager;
-import br.unibh.gestar.repository.MedicalCareRepository;
-import br.unibh.gestar.repository.PatientRepository;
+import br.unibh.gestar.contract.MedicalCareRepositoryContract;
+import br.unibh.gestar.contract.PatientRepositoryContract;
 import br.unibh.gestar.service.PatientService;
 import br.unibh.gestar.service.MedicalCareService;
 
@@ -18,8 +18,8 @@ public class Main {
     public static void main(String[] args) {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
 
-        MedicalCareRepository repository = new PostgresMedicalCareRepository();
-        PatientRepository patientRepository = new PostgresPatientRepository();
+        MedicalCareRepositoryContract repository = new PostgresMedicalCareRepository();
+        PatientRepositoryContract patientRepository = new PostgresPatientRepository();
 
         QueueManager queue = new QueueManager();
         ClinicalNotifier notifier = new ClinicalNotifier();

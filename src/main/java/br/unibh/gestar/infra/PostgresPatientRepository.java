@@ -1,7 +1,7 @@
 package br.unibh.gestar.infra;
 
 import br.unibh.gestar.domain.Patient;
-import br.unibh.gestar.repository.PatientRepository;
+import br.unibh.gestar.contract.PatientRepositoryContract;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class PostgresPatientRepository implements PatientRepository {
+public class PostgresPatientRepository implements PatientRepositoryContract {
     @Override
     public void save(Patient patient) {
         String query = """

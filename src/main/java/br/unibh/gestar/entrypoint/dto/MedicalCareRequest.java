@@ -1,9 +1,9 @@
-package br.unibh.gestar.interfaces.dto;
+package br.unibh.gestar.entrypoint.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record CareRequest(
+public record MedicalCareRequest(
         String name,
         Integer age,
         String birthDate,
@@ -18,5 +18,5 @@ public record CareRequest(
         Integer pain,
         String referralReason,
         String destinationUnit,
-        String status) {
-}
+        String status
+) {}

@@ -8,14 +8,14 @@ import br.unibh.gestar.domain.Patient;
 import br.unibh.gestar.domain.PriorityCategory;
 import br.unibh.gestar.domain.UrgencyLevel;
 import br.unibh.gestar.domain.VitalSigns;
-import br.unibh.gestar.interfaces.dto.CareRequest;
-import br.unibh.gestar.interfaces.dto.CareResponse;
-import br.unibh.gestar.interfaces.dto.PatientResponse;
-import br.unibh.gestar.interfaces.dto.QueueResponse;
-import br.unibh.gestar.interfaces.dto.VitalsResponse;
+import br.unibh.gestar.entrypoint.dto.MedicalCareRequest;
+import br.unibh.gestar.entrypoint.dto.MedicalCareResponse;
+import br.unibh.gestar.entrypoint.dto.PatientResponse;
+import br.unibh.gestar.entrypoint.dto.QueueResponse;
+import br.unibh.gestar.entrypoint.dto.VitalsResponse;
 import br.unibh.gestar.queue.QueueManager;
-import br.unibh.gestar.repository.PatientRepository;
-import br.unibh.gestar.repository.MedicalCareRepository;
+import br.unibh.gestar.contract.PatientRepositoryContract;
+import br.unibh.gestar.contract.MedicalCareRepositoryContract;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -24,15 +24,15 @@ import java.util.Optional;
 
 public class MedicalCareService {
     private final ClassificationStrategy strategy;
-    private final MedicalCareRepository repository;
-    private final PatientRepository patientRepository;
+    private final MedicalCareRepositoryContract repository;
+    private final PatientRepositoryContract patientRepository;
     private final QueueManager queue;
     private final ClinicalNotifier notifier;
 
     public MedicalCareService(
         ClassificationStrategy strategy, 
-        MedicalCareRepository repository,
-        PatientRepository patientRepository,
+        MedicalCareRepositoryContract repository,
+        PatientRepositoryContract patientRepository,
         QueueManager queue, 
         ClinicalNotifier notifier
     ) {
@@ -43,7 +43,7 @@ public class MedicalCareService {
         this.notifier = notifier;
     }
 
-    public CareResponse create(CareRequest req) {
+    public MedicalCareResponse create(MedicalCareRequest req) {
         Patient patient = resolvePatient(req);
         VitalSigns vitalSigns = toVitalSigns(req);
         String complaint = require(req.complaint(), "complaint");
@@ -67,7 +67,7 @@ public class MedicalCareService {
         return toResponse(care);
     }
 
-    public CareResponse refer(CareRequest req) {
+    public MedicalCareResponse refer(MedicalCareRequest req) {
         Patient patient = resolvePatient(req);
         VitalSigns vitalSigns = toVitalSigns(req);
         String complaint = require(req.complaint(), "complaint");
@@ -87,7 +87,7 @@ public class MedicalCareService {
         return toResponse(care);
     }
 
-    public CareResponse update(String id, CareRequest req) {
+    public MedicalCareResponse update(String id, MedicalCareRequest req) {
         if (req.status() != null && !req.status().isBlank()) {
             if (!"FINISHED".equalsIgnoreCase(req.status().trim())) {
                 throw new IllegalArgumentException(
@@ -106,7 +106,7 @@ public class MedicalCareService {
         );
     }
 
-    public CareResponse reclassify(String id, VitalSigns newVitalSigns) {
+    public MedicalCareResponse reclassify(String id, VitalSigns newVitalSigns) {
         MedicalCare care = findById(id);
         care.setVitalSigns(newVitalSigns);
         care.reclassify(strategy.classify(care));
@@ -120,7 +120,7 @@ public class MedicalCareService {
         return toResponse(care);
     }
 
-    public Optional<CareResponse> callNext() {
+    public Optional<MedicalCareResponse> callNext() {
         MedicalCare care = queue.next();
         
         if (care == null) {
@@ -134,7 +134,7 @@ public class MedicalCareService {
         return Optional.of(toResponse(care));
     }
 
-    public CareResponse finish(String id) {
+    public MedicalCareResponse finish(String id) {
         MedicalCare care = findById(id);
         
         care.advanceStatus(MedicalCareStatus.FINISHED);
@@ -152,12 +152,18 @@ public class MedicalCareService {
         return repository.listAll();
     }
 
-    public List<CareResponse> listResponses() {
+    public List<MedicalCareResponse> listResponses() {
         return listAll().stream().map(this::toResponse).toList();
     }
 
-    public CareResponse findResponse(String id) {
+    public MedicalCareResponse findResponse(String id) {
         return toResponse(findById(id));
+    }
+
+    public static class MedicalCareNotFoundException extends RuntimeException {
+        public MedicalCareNotFoundException(String id) {
+            super("No medical care with id " + id);
+        }
     }
 
     public QueueStatus queueStatus() {
@@ -175,8 +181,8 @@ public class MedicalCareService {
         require(complaint, "complaint");
     }
 
-    public CareResponse toResponse(MedicalCare c) {
-        return new CareResponse(
+    public MedicalCareResponse toResponse(MedicalCare c) {
+        return new MedicalCareResponse(
             c.getId(),
             toPatientResponse(c.getPatient()),
             c.getMainComplaint(),
@@ -202,7 +208,7 @@ public class MedicalCareService {
         return new QueueResponse(q.red(), q.orange(), q.yellow(), q.green(), q.total(), next);
     }
 
-    private Patient resolvePatient(CareRequest req) {
+    private Patient resolvePatient(MedicalCareRequest req) {
         Patient candidate = toPatient(req);
         return patientRepository.findByNameAndBirthDate(
             candidate.getName(),
@@ -216,7 +222,7 @@ public class MedicalCareService {
         });
     }
 
-    private static Patient toPatient(CareRequest req) {
+    private static Patient toPatient(MedicalCareRequest req) {
         String name = require(req.name(), "name");
        
         if (req.birthDate() != null && !req.birthDate().isBlank()) {
@@ -238,7 +244,7 @@ public class MedicalCareService {
         throw new IllegalArgumentException("Provide 'birthDate' (yyyy-MM-dd) or 'age'");
     }
 
-    private static VitalSigns toVitalSigns(CareRequest r) {
+    private static VitalSigns toVitalSigns(MedicalCareRequest r) {
         return new VitalSigns(
             r.systolic() == null ? 120 : r.systolic(),
             r.diastolic() == null ? 80 : r.diastolic(),
@@ -250,13 +256,13 @@ public class MedicalCareService {
         );
     }
 
-    private static boolean hasVitalSigns(CareRequest r) {
+    private static boolean hasVitalSigns(MedicalCareRequest r) {
         return r.systolic() != null || r.diastolic() != null || r.heartRate() != null
             || r.respiratoryRate() != null || r.temperature() != null
             || r.spo2() != null || r.pain() != null;
     }
 
-    private static PriorityCategory toCategory(CareRequest req) {
+    private static PriorityCategory toCategory(MedicalCareRequest req) {
         String value = req.category();
         
         if (value == null || value.isBlank()) {
