@@ -12,7 +12,7 @@ import br.unibh.gestar.queue.QueueManager;
 import br.unibh.gestar.repository.MedicalCareRepository;
 import br.unibh.gestar.repository.PatientRepository;
 import br.unibh.gestar.service.PatientService;
-import br.unibh.gestar.service.TriageService;
+import br.unibh.gestar.service.MedicalCareService;
 
 public class Main {
     public static void main(String[] args) {
@@ -26,8 +26,8 @@ public class Main {
         notifier.register(new MedicalPanel());
         ClassificationStrategy strategy = ClassificationStrategyFactory.create(ProtocolType.MANCHESTER);
 
-        TriageService service = new TriageService(strategy, repository, queue, notifier);
         PatientService patientService = new PatientService(patientRepository);
+        MedicalCareService service = new MedicalCareService(strategy, repository, patientRepository, queue, notifier);
 
         new ApiServer(service, patientService).start(port);
     }

@@ -7,6 +7,7 @@ import br.unibh.gestar.repository.PatientRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 public class PatientService {
     private final PatientRepository repository;
@@ -16,10 +17,32 @@ public class PatientService {
     }
 
     public PatientResponse create(PatientRequest req) {
-        Patient patient = toPatient(req);
-        repository.save(patient);
-        return toResponse(patient);
+        ResolvedPatient resolved = resolvePatient(req);
+        if (resolved.existing()) {
+            repository.update(resolved.patient());
+        } else {
+            repository.save(resolved.patient());
+        }
+        
+        return toResponse(resolved.patient());
     }
+
+    public List<PatientResponse> list() {
+        return repository.listAll().stream().map(PatientService::toResponse).toList();
+    }
+
+    private ResolvedPatient resolvePatient(PatientRequest req) {
+        Patient candidate = toPatient(req);
+
+        return repository.findByNameAndBirthDate(
+            candidate.getName(),
+            candidate.getBirthDate()
+        ).map(
+            existing -> new ResolvedPatient(existing, true)
+        ).orElseGet(() -> new ResolvedPatient(candidate, false));
+    }
+
+    private record ResolvedPatient(Patient patient, boolean existing) {}
 
     private static Patient toPatient(PatientRequest req) {
         String name = require(req.name(), "name");

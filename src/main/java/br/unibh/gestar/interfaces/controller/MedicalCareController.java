@@ -2,22 +2,22 @@ package br.unibh.gestar.interfaces.controller;
 
 import br.unibh.gestar.interfaces.dto.CareRequest;
 import br.unibh.gestar.interfaces.dto.CareResponse;
-import br.unibh.gestar.service.TriageService;
+import br.unibh.gestar.service.MedicalCareService;
 
 import io.javalin.http.Context;
 
 import java.util.Map;
 
-public class TriageController {
-    private final TriageService service;
+public class MedicalCareController {
+    private final MedicalCareService service;
 
-    public TriageController(TriageService service) {
+    public MedicalCareController(MedicalCareService service) {
         this.service = service;
     }
 
     public void create(Context ctx) {
         CareRequest req = body(ctx);
-        CareResponse care = service.performTriage(req);
+        CareResponse care = service.create(req);
         
         ctx.status(201).json(care);
     }

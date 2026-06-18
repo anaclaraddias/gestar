@@ -14,6 +14,7 @@ import br.unibh.gestar.interfaces.dto.PatientResponse;
 import br.unibh.gestar.interfaces.dto.QueueResponse;
 import br.unibh.gestar.interfaces.dto.VitalsResponse;
 import br.unibh.gestar.queue.QueueManager;
+import br.unibh.gestar.repository.PatientRepository;
 import br.unibh.gestar.repository.MedicalCareRepository;
 
 import java.time.LocalDate;
@@ -21,26 +22,29 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
-public class TriageService {
+public class MedicalCareService {
     private final ClassificationStrategy strategy;
     private final MedicalCareRepository repository;
+    private final PatientRepository patientRepository;
     private final QueueManager queue;
     private final ClinicalNotifier notifier;
 
-    public TriageService(
+    public MedicalCareService(
         ClassificationStrategy strategy, 
         MedicalCareRepository repository,
+        PatientRepository patientRepository,
         QueueManager queue, 
         ClinicalNotifier notifier
     ) {
         this.strategy = strategy;
         this.repository = repository;
+        this.patientRepository = patientRepository;
         this.queue = queue;
         this.notifier = notifier;
     }
 
-    public CareResponse performTriage(CareRequest req) {
-        Patient patient = toPatient(req);
+    public CareResponse create(CareRequest req) {
+        Patient patient = resolvePatient(req);
         VitalSigns vitalSigns = toVitalSigns(req);
         String complaint = require(req.complaint(), "complaint");
         PriorityCategory category = toCategory(req);
@@ -64,7 +68,7 @@ public class TriageService {
     }
 
     public CareResponse refer(CareRequest req) {
-        Patient patient = toPatient(req);
+        Patient patient = resolvePatient(req);
         VitalSigns vitalSigns = toVitalSigns(req);
         String complaint = require(req.complaint(), "complaint");
         PriorityCategory category = toCategory(req);
@@ -196,6 +200,20 @@ public class TriageService {
         );
 
         return new QueueResponse(q.red(), q.orange(), q.yellow(), q.green(), q.total(), next);
+    }
+
+    private Patient resolvePatient(CareRequest req) {
+        Patient candidate = toPatient(req);
+        return patientRepository.findByNameAndBirthDate(
+            candidate.getName(),
+            candidate.getBirthDate()
+        ).map(existing -> {
+            patientRepository.update(existing);
+            return existing;
+        }).orElseGet(() -> {
+            patientRepository.save(candidate);
+            return candidate;
+        });
     }
 
     private static Patient toPatient(CareRequest req) {

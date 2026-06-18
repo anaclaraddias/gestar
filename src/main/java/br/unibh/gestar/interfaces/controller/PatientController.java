@@ -18,6 +18,10 @@ public class PatientController {
         ctx.status(201).json(service.create(req));
     }
 
+    public void list(Context ctx) {
+        ctx.json(service.list());
+    }
+
     private static PatientRequest patientBody(Context ctx) {
         try {
             return ctx.bodyAsClass(PatientRequest.class);
