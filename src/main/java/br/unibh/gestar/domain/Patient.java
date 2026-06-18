@@ -21,10 +21,6 @@ public class Patient {
         this.birthDate = birthDate;
     }
 
-    /**
-     * Rebuilds a patient from stored data, preserving the original id. Used by
-     * repositories to rehydrate; the public constructor generates a new id.
-     */
     public static Patient fromPersistence(String id, String name, LocalDate birthDate) {
         return new Patient(id, name, birthDate);
     }
