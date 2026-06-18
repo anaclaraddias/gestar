@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PriorityCategoryTest {
-
     @Test
     void shouldHaveCorrectWeights() {
         assertEquals(3, PriorityCategory.HIGHEST_PRIORITY.getWeight());

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MedicalCareStatusTest {
-
     @Test
     void shouldHaveMedicalCareStatuses() {
         assertNotNull(MedicalCareStatus.WAITING_FOR_TRIAGE);

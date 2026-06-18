@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UrgencyLevelTest {
-
     @Test
     void shouldHaveCorrectRedProperties() {
         UrgencyLevel red = UrgencyLevel.RED;

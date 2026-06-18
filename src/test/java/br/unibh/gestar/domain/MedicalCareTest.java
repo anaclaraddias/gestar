@@ -21,7 +21,7 @@ public class MedicalCareTest {
         MedicalCare care = new MedicalCare(
             patient,
             "Chest pain",
-            PriorityCategory.HIGH
+            PriorityCategory.HIGHEST_PRIORITY
         );
 
         assertNotNull(care.getId());
@@ -70,7 +70,7 @@ public class MedicalCareTest {
         MedicalCare care = new MedicalCare(
             patient,
             "Severe chest pain",
-            PriorityCategory.HIGH
+            PriorityCategory.HIGHEST_PRIORITY
         );
 
         care.setClassification(UrgencyLevel.RED);
@@ -84,7 +84,7 @@ public class MedicalCareTest {
         MedicalCare care = new MedicalCare(
             patient,
             "Complex case",
-            PriorityCategory.HIGH
+            PriorityCategory.HIGHEST_PRIORITY
         );
 
         care.markReferred("Needs specialist", "Cardiology");
@@ -97,7 +97,7 @@ public class MedicalCareTest {
         MedicalCare care = new MedicalCare(
             patient,
             "Critical condition",
-            PriorityCategory.HIGH
+            PriorityCategory.HIGHEST_PRIORITY
         );
 
         care.setClassification(UrgencyLevel.RED);

@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PatientTest {
-
     @Test
     void shouldCreatePatientWithGeneratedId() {
         LocalDate birthDate = LocalDate.of(1990, 5, 15);

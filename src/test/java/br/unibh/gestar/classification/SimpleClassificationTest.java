@@ -113,7 +113,7 @@ public class SimpleClassificationTest {
     @Test
     void shouldClassifyAsOrangeWhenBothLowOxAndHighPain() {
         VitalSigns vitals = new VitalSigns(120, 80, 70, 16, 36.8, 89, 8);
-        MedicalCare care = new MedicalCare(patient, "Critical", PriorityCategory.HIGH);
+        MedicalCare care = new MedicalCare(patient, "Critical", PriorityCategory.HIGHEST_PRIORITY);
         care.setVitalSigns(vitals);
 
         UrgencyLevel level = classification.classify(care);

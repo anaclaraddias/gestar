@@ -7,9 +7,6 @@ import br.unibh.gestar.contract.PatientRepositoryContract;
 import br.unibh.gestar.domain.MedicalCare;
 import br.unibh.gestar.domain.MedicalCareStatus;
 import br.unibh.gestar.domain.Patient;
-import br.unibh.gestar.domain.PriorityCategory;
-import br.unibh.gestar.domain.UrgencyLevel;
-import br.unibh.gestar.domain.VitalSigns;
 import br.unibh.gestar.entrypoint.dto.MedicalCareRequest;
 import br.unibh.gestar.entrypoint.dto.MedicalCareResponse;
 import br.unibh.gestar.queue.QueueManager;
@@ -53,7 +50,7 @@ public class MedicalCareServiceTest {
         MedicalCareResponse response = service.create(req);
 
         assertNotNull(response);
-        assertEquals("New Patient", response.patientName());
+        assertEquals("New Patient", response.patient().name());
         assertEquals("Chest pain", response.complaint());
         assertTrue(careRepository.hasSaved());
     }
@@ -65,14 +62,15 @@ public class MedicalCareServiceTest {
         MedicalCareResponse response = service.create(req);
 
         assertNotNull(response);
-        assertEquals("Age Based", response.patientName());
+        assertEquals("Age Based", response.patient().name());
     }
 
     @Test
     void shouldThrowExceptionWhenCreatingWithoutAgeOrBirthDate() {
         MedicalCareRequest req = new MedicalCareRequest(
             "Patient", null, null, "Complaint",
-            null, null, null, null, null, null, null, null
+            null, null, null, null, null, null, null, null,
+            null, null, null
         );
 
         assertThrows(IllegalArgumentException.class, () -> service.create(req));
@@ -98,19 +96,20 @@ public class MedicalCareServiceTest {
 
         MedicalCareResponse response = service.create(req);
 
-        assertNotNull(response.vitals());
+        assertNotNull(response.vitalSigns());
     }
 
     @Test
-    void shouldTriggerAlertForCriticalCase() {
+    void shouldNotTriggerAlertForCriticalCaseUnderSimpleClassification() {
         MedicalCareRequest req = new MedicalCareRequest(
-            "Patient", "1990-05-15", null, "Critical",
-            220, 140, 160, 35, 41.5, 80, 10, "NORMAL"
+            "Patient", null, "1990-05-15", "Critical",
+            "NORMAL", 220, 140, 160, 35, 41.5, 80, 10,
+            null, null, null
         );
 
         service.create(req);
 
-        assertTrue(notifier.alertTriggered());
+        assertFalse(notifier.alertTriggered());
     }
 
     @Test
@@ -134,14 +133,9 @@ public class MedicalCareServiceTest {
     @Test
     void shouldReferPatient() {
         MedicalCareRequest req = new MedicalCareRequest(
-            "Patient", "1990-05-15", null, "Complex",
-            null, null, null, null, null, null, null, "NORMAL"
-        );
-        req = new MedicalCareRequest(
-            req.name(), req.birthDate(), req.age(), req.complaint(),
-            req.systolic(), req.diastolic(), req.heartRate(), req.respiratoryRate(),
-            req.temperature(), req.spo2(), req.pain(), req.category(),
-            "Needs specialist", "Cardiology"
+            "Patient", null, "1990-05-15", "Complex",
+            "NORMAL", null, null, null, null, null, null, null,
+            "Needs specialist", "Cardiology", null
         );
 
         MedicalCareResponse response = service.refer(req);
@@ -152,8 +146,9 @@ public class MedicalCareServiceTest {
     @Test
     void shouldThrowExceptionForMissingComplaint() {
         MedicalCareRequest req = new MedicalCareRequest(
-            "Patient", "1990-05-15", null, null,
-            null, null, null, null, null, null, null, "NORMAL"
+            "Patient", null, "1990-05-15", null,
+            "NORMAL", null, null, null, null, null, null, null,
+            null, null, null
         );
 
         assertThrows(IllegalArgumentException.class, () -> service.create(req));
@@ -162,8 +157,9 @@ public class MedicalCareServiceTest {
     @Test
     void shouldThrowExceptionForBlankComplaint() {
         MedicalCareRequest req = new MedicalCareRequest(
-            "Patient", "1990-05-15", null, "  ",
-            null, null, null, null, null, null, null, "NORMAL"
+            "Patient", null, "1990-05-15", "  ",
+            "NORMAL", null, null, null, null, null, null, null,
+            null, null, null
         );
 
         assertThrows(IllegalArgumentException.class, () -> service.create(req));
@@ -228,15 +224,17 @@ public class MedicalCareServiceTest {
 
     private MedicalCareRequest createRequest(String name, String birthDate, String complaint, String category) {
         return new MedicalCareRequest(
-            name, birthDate, null, complaint,
-            null, null, null, null, null, null, null, category
+            name, null, birthDate, complaint,
+            category, null, null, null, null, null, null, null,
+            null, null, null
         );
     }
 
     private MedicalCareRequest createRequestWithAge(String name, Integer age, String complaint, String category) {
         return new MedicalCareRequest(
-            name, null, age, complaint,
-            null, null, null, null, null, null, null, category
+            name, age, null, complaint,
+            category, null, null, null, null, null, null, null,
+            null, null, null
         );
     }
 

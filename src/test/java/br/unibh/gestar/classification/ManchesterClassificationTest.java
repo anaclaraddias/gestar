@@ -25,7 +25,7 @@ public class ManchesterClassificationTest {
 
     @Test
     void shouldThrowExceptionWhenVitalSignsAreNull() {
-        MedicalCare care = new MedicalCare(patient, "Chest pain", PriorityCategory.HIGH);
+        MedicalCare care = new MedicalCare(patient, "Chest pain", PriorityCategory.HIGHEST_PRIORITY);
 
         assertThrows(IllegalStateException.class, () -> classification.classify(care));
     }
@@ -33,7 +33,7 @@ public class ManchesterClassificationTest {
     @Test
     void shouldClassifyAsRedForLowOxygenSaturation() {
         VitalSigns vitals = new VitalSigns(120, 80, 70, 16, 36.8, 84, 2);
-        MedicalCare care = new MedicalCare(patient, "Difficulty breathing", PriorityCategory.HIGH);
+        MedicalCare care = new MedicalCare(patient, "Difficulty breathing", PriorityCategory.HIGHEST_PRIORITY);
         care.setVitalSigns(vitals);
 
         UrgencyLevel level = classification.classify(care);
@@ -43,7 +43,7 @@ public class ManchesterClassificationTest {
     @Test
     void shouldClassifyAsRedForHighHeartRate() {
         VitalSigns vitals = new VitalSigns(120, 80, 160, 16, 36.8, 97, 2);
-        MedicalCare care = new MedicalCare(patient, "Heart palpitations", PriorityCategory.HIGH);
+        MedicalCare care = new MedicalCare(patient, "Heart palpitations", PriorityCategory.HIGHEST_PRIORITY);
         care.setVitalSigns(vitals);
 
         UrgencyLevel level = classification.classify(care);
@@ -53,7 +53,7 @@ public class ManchesterClassificationTest {
     @Test
     void shouldClassifyAsRedForLowHeartRate() {
         VitalSigns vitals = new VitalSigns(120, 80, 35, 16, 36.8, 97, 2);
-        MedicalCare care = new MedicalCare(patient, "Low heart rate", PriorityCategory.HIGH);
+        MedicalCare care = new MedicalCare(patient, "Low heart rate", PriorityCategory.HIGHEST_PRIORITY);
         care.setVitalSigns(vitals);
 
         UrgencyLevel level = classification.classify(care);
@@ -63,7 +63,7 @@ public class ManchesterClassificationTest {
     @Test
     void shouldClassifyAsRedForHighRespiratoryRate() {
         VitalSigns vitals = new VitalSigns(120, 80, 70, 36, 36.8, 97, 2);
-        MedicalCare care = new MedicalCare(patient, "Rapid breathing", PriorityCategory.HIGH);
+        MedicalCare care = new MedicalCare(patient, "Rapid breathing", PriorityCategory.HIGHEST_PRIORITY);
         care.setVitalSigns(vitals);
 
         UrgencyLevel level = classification.classify(care);
@@ -73,7 +73,7 @@ public class ManchesterClassificationTest {
     @Test
     void shouldClassifyAsRedForHighBloodPressure() {
         VitalSigns vitals = new VitalSigns(225, 140, 70, 16, 36.8, 97, 2);
-        MedicalCare care = new MedicalCare(patient, "High blood pressure", PriorityCategory.HIGH);
+        MedicalCare care = new MedicalCare(patient, "High blood pressure", PriorityCategory.HIGHEST_PRIORITY);
         care.setVitalSigns(vitals);
 
         UrgencyLevel level = classification.classify(care);
@@ -83,7 +83,7 @@ public class ManchesterClassificationTest {
     @Test
     void shouldClassifyAsRedForHighFever() {
         VitalSigns vitals = new VitalSigns(120, 80, 70, 16, 41.5, 97, 2);
-        MedicalCare care = new MedicalCare(patient, "High fever", PriorityCategory.HIGH);
+        MedicalCare care = new MedicalCare(patient, "High fever", PriorityCategory.HIGHEST_PRIORITY);
         care.setVitalSigns(vitals);
 
         UrgencyLevel level = classification.classify(care);

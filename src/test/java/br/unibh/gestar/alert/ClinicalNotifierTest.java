@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,7 +82,7 @@ public class ClinicalNotifierTest {
 
     private MedicalCare createMedicalCare() {
         Patient patient = new Patient("Test Patient", LocalDate.of(1990, 5, 15));
-        return new MedicalCare(patient, "Critical condition", PriorityCategory.HIGH);
+        return new MedicalCare(patient, "Critical condition", PriorityCategory.HIGHEST_PRIORITY);
     }
 
     private static class MockAlertObserver implements AlertObserver {

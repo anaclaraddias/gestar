@@ -129,17 +129,17 @@ public class QueueManagerTest {
 
     @Test
     void shouldRespectPriorityOrderWithinUrgencyLevel() {
-        MedicalCare highPriority = new MedicalCare(patient, "High priority", PriorityCategory.HIGH);
+        MedicalCare highPriority = new MedicalCare(patient, "High priority", PriorityCategory.HIGHEST_PRIORITY);
         highPriority.setClassification(UrgencyLevel.GREEN);
 
-        MedicalCare lowPriority = new MedicalCare(patient, "Low priority", PriorityCategory.LOW);
+        MedicalCare lowPriority = new MedicalCare(patient, "Low priority", PriorityCategory.NORMAL);
         lowPriority.setClassification(UrgencyLevel.GREEN);
 
         queue.add(lowPriority);
         queue.add(highPriority);
 
         MedicalCare next = queue.next();
-        assertEquals(PriorityCategory.HIGH, next.getPriorityCategory());
+        assertEquals(PriorityCategory.HIGHEST_PRIORITY, next.getPriorityCategory());
     }
 
     @Test
