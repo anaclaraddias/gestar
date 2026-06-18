@@ -5,14 +5,14 @@ Hospitais e unidades de saúde pública enfrentam problemas organizacionais liga
 
 ### Usuários envolvidos
 - Médico
-- Triagem
+- Profissional de triagem
 - Paciente
 
 ### Dificuldades que existem atualmente
 - Sistemas parcialmente digitalizados
 - Gerência ineficiente em grande quantidade de pacientes
 - Organização de prioridades e urgências
-- Perda de informção
+- Perda de informação
 - Demora no atendimento
 
 ### Como a solução proposta poderá melhorar o processo.
@@ -22,6 +22,7 @@ Participantes:
 - Ana Clara Domingos Dias Silva - 12316965
 - Samuel Zappala Batista - 12411504
 - Gabriel Victor Dornelas Ferreira Sathler - 12319216
+- Larissa Antunes Corrêa Morais - 1242021588
 
 ### Como executar o projeto
 
