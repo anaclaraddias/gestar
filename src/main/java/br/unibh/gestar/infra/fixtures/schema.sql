@@ -1,11 +1,3 @@
--- Gestar database schema (PostgreSQL).
---
--- One-time setup (matches infra/PostgresConnection: gestar_db, user admin):
---   createdb -U admin gestar_db
---   psql -U admin -d gestar_db -f db/schema.sql
---
--- The application connects to jdbc:postgresql://localhost:5432/gestar_db.
-
 CREATE TABLE IF NOT EXISTS patient (
     id          VARCHAR(36) PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
@@ -22,7 +14,6 @@ CREATE TABLE IF NOT EXISTS medical_care (
     status              VARCHAR(32) NOT NULL,
     referral_reason     TEXT,
     destination_unit    TEXT,
-    -- vital signs measured at triage (nullable: a record may exist before triage)
     systolic            INTEGER,
     diastolic           INTEGER,
     heart_rate          INTEGER,

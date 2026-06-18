@@ -11,23 +11,7 @@ import br.unibh.gestar.queue.QueueManager;
 import br.unibh.gestar.repository.MedicalCareRepository;
 import br.unibh.gestar.service.TriageService;
 
-/**
- * Entry point of Gestar: wires the dependencies and starts the Javalin HTTP API
- * that exposes the triage and prioritized-queue flow. Persistence is Postgres
- * (run db/schema.sql once); the queue lives in memory.
- *
- * Routes:
- *   POST   /triages           perform triage of an eligible patient
- *   POST   /referrals         register a referred (non-eligible) patient
- *   GET    /triages           list all medical care
- *   GET    /triages/{id}      get one medical care
- *   PATCH  /triages/{id}      update: new vital signs reclassify (RN05);
- *                             {"status":"FINISHED"} finishes it
- *   GET    /queue             queue sizes per color + who is next
- *   POST   /queue/calls       call the next patient
- */
 public class Main {
-
     public static void main(String[] args) {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
 
