@@ -164,14 +164,14 @@ para "em atendimento".
 
 | RF | Caso de Uso | Padrão/Componente |
 |----|-------------|-------------------|
-| RF03 | UC02 | *Strategy* (EstrategiaClassificacao) |
+| RF03 | UC02 | *Strategy* (ClassificationStrategy) |
 | RF04 | UC03, UC04 | Regra de elegibilidade + estado "encaminhado" |
-| RF05, RF06, RF07 | UC05, UC08 | GerenciadorFila (PriorityQueue + Comparator cor→idoso→chegada) |
+| RF05, RF06, RF07 | UC05, UC08 | QueueManager (PriorityQueue + Comparator cor→idoso→chegada) |
 | RF08 | UC07 | Regra de reclassificação monotônica (RN05) |
-| RF09 | UC04, UC08, UC09 | Estados do atendimento (enum StatusAtendimento) |
-| RF10 | UC06 | *Observer* (NotificadorClinico) |
-| RNF04 | (geral) | *Repository* (AtendimentoRepository) |
-| RF01, RF02 | UC01, UC02 | *Factory Method* (criação de Atendimento/Estratégia) |
+| RF09 | UC04, UC08, UC09 | Estados do atendimento (enum MedicalCareStatus) |
+| RF10 | UC06 | *Observer* (ClinicalNotifier) |
+| RNF04 | (geral) | *Repository* (MedicalCareRepositoryContract) |
+| RF01, RF02 | UC01, UC02 | *Factory Method* (criação de MedicalCare/estratégia) |
 
 ---
 

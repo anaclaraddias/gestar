@@ -40,7 +40,7 @@ André Luiz, ou unidade Unimed com gineco/obstetra).
 
 **Protocolo de classificação**
 - Utilizam o **Protocolo de Manchester**, obrigatório; o COREN exige certificação do
-  enfermeiro para classificar risco. *Valida a estratégia `ClassificacaoManchester`.*
+  enfermeiro para classificar risco. *Valida a estratégia `ManchesterClassification`.*
 - A classificação não é um simples limite sobre sinais vitais: parte da **queixa
   principal** → abre o **fluxograma** correspondente → avalia os **discriminadores**;
   cada discriminador alterado define a **cor**. Sinais usados na maioria dos casos:
