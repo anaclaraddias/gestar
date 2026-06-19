@@ -1,8 +1,9 @@
 # Diagramas e Guia de Implementação do Gestar
 
-Modelagem da fatia implementada: **triagem com classificação de risco + fila priorizada**.
-As descrições textuais dos casos de uso estão em `requisitos.md` (Seção 7); aqui ficam
-os diagramas e o guia que orienta a codificação.
+Modelagem da fatia implementada: triagem com classificação de risco, fila priorizada,
+alertas, persistência em PostgreSQL e exposição por API REST. As descrições textuais dos
+casos de uso estão em `requisitos.md` (Seção 8); aqui ficam os diagramas e o guia. Os
+identificadores seguem o código (em inglês).
 
 ---
 
@@ -18,14 +19,14 @@ graph LR
     UC2(Inserir na fila priorizada)
     UC3(Chamar próximo paciente)
     UC4(Emitir alerta clínico)
-    UC5(Finalizar atendimento)
+    UC5(Encaminhar paciente)
 
     PT --- UC1
     PAC --- UC1
     UC1 -. include .-> UC2
     UC1 -. extend: caso crítico .-> UC4
+    UC1 -. extend: não elegível .-> UC5
     MED --- UC3
-    MED --- UC5
 ```
 
 ---
@@ -34,133 +35,167 @@ graph LR
 
 ```mermaid
 classDiagram
-    class Paciente {
+    class Patient {
         -String id
-        -String nome
-        -LocalDate dataNascimento
-        +getNome() String
+        -String name
+        -LocalDate birthDate
+        +getAge() int
     }
-    class SinaisVitais {
-        -int frequenciaCardiaca
-        -double temperatura
-        -int saturacao
-        -int escalaDor
+    class VitalSigns {
+        -int systolicPressure
+        -int diastolicPressure
+        -int heartRate
+        -int respiratoryRate
+        -double temperature
+        -int oxygenSaturation
+        -int painScale
     }
-    class NivelUrgencia {
+    class UrgencyLevel {
         <<enumeration>>
-        VERMELHO
-        LARANJA
-        AMARELO
-        VERDE
-        -int prioridade
-        -int tempoAlvoMinutos
-        +getPrioridade() int
+        RED
+        ORANGE
+        YELLOW
+        GREEN
+        -int priority
+        -int targetTimeMinutes
+        +getPriority() int
     }
-    class CategoriaPrioridade {
+    class PriorityCategory {
         <<enumeration>>
-        PRIORIDADE_MAXIMA
-        PREFERENCIAL
+        HIGHEST_PRIORITY
+        PREFERRED
         NORMAL
-        -int peso
+        -int weight
+        +forAge(int) PriorityCategory$
     }
-    class StatusAtendimento {
+    class MedicalCareStatus {
         <<enumeration>>
-        AGUARDANDO_TRIAGEM
-        EM_TRIAGEM
-        NA_FILA
-        EM_ATENDIMENTO
-        FINALIZADO
-        ENCAMINHADO
+        WAITING_FOR_TRIAGE
+        IN_TRIAGE
+        IN_QUEUE
+        IN_MEDICAL_CARE
+        FINISHED
+        REFERRED
     }
-    class TipoProtocolo {
+    class ProtocolType {
         <<enumeration>>
         MANCHESTER
-        SIMPLES
+        SIMPLE
     }
-    class Atendimento {
+    class MedicalCare {
         -String id
-        -Paciente paciente
-        -SinaisVitais sinaisVitais
-        -String queixaPrincipal
-        -NivelUrgencia nivel
-        -CategoriaPrioridade categoriaPrioridade
-        -StatusAtendimento status
-        -LocalDateTime dataHoraChegada
-        +avancarStatus(StatusAtendimento) void
-        +reclassificar(NivelUrgencia) void
-        +ehCritico() boolean
+        -Patient patient
+        -VitalSigns vitalSigns
+        -String mainComplaint
+        -UrgencyLevel urgencyLevel
+        -PriorityCategory priorityCategory
+        -MedicalCareStatus status
+        -LocalDateTime arrivalDateTime
+        +setClassification(UrgencyLevel) void
+        +reclassify(UrgencyLevel) void
+        +markReferred(String, String) void
+        +advanceStatus(MedicalCareStatus) void
+        +isCritical() boolean
     }
-    class EstrategiaClassificacao {
+    class ClassificationStrategy {
         <<interface>>
-        +classificar(Atendimento) NivelUrgencia
+        +classify(MedicalCare) UrgencyLevel
     }
-    class ClassificacaoManchester {
-        +classificar(Atendimento) NivelUrgencia
+    class ManchesterClassification {
+        +classify(MedicalCare) UrgencyLevel
     }
-    class ClassificacaoSimples {
-        +classificar(Atendimento) NivelUrgencia
+    class SimpleClassification {
+        +classify(MedicalCare) UrgencyLevel
     }
-    class FabricaEstrategiaClassificacao {
-        +criar(TipoProtocolo) EstrategiaClassificacao$
+    class ClassificationStrategyFactory {
+        +create(ProtocolType) ClassificationStrategy$
     }
-    class AtendimentoRepository {
+    class MedicalCareRepositoryContract {
         <<interface>>
-        +salvar(Atendimento) void
-        +buscarPorId(String) Atendimento
-        +listarTodos() List~Atendimento~
+        +save(MedicalCare) void
+        +findById(String) Optional~MedicalCare~
+        +listAll() List~MedicalCare~
     }
-    class AtendimentoRepositoryEmMemoria {
-        -Map~String, Atendimento~ dados
-        +salvar(Atendimento) void
-        +buscarPorId(String) Atendimento
-        +listarTodos() List~Atendimento~
-    }
-    class GerenciadorFila {
-        -PriorityQueue~Atendimento~ fila
-        +adicionar(Atendimento) void
-        +proximo() Atendimento
-        +tamanho() int
-    }
-    class ObservadorAlerta {
+    class PatientRepositoryContract {
         <<interface>>
-        +notificar(Atendimento) void
+        +save(Patient) void
+        +update(Patient) void
+        +findByNameAndBirthDate(String, LocalDate) Optional~Patient~
+        +listAll() List~Patient~
     }
-    class PainelMedico {
-        +notificar(Atendimento) void
+    class PostgresMedicalCareRepository {
+        +save(MedicalCare) void
+        +findById(String) Optional~MedicalCare~
+        +listAll() List~MedicalCare~
     }
-    class NotificadorClinico {
-        -List~ObservadorAlerta~ observadores
-        +registrar(ObservadorAlerta) void
-        +dispararAlerta(Atendimento) void
+    class PostgresPatientRepository {
+        +save(Patient) void
+        +listAll() List~Patient~
     }
-    class ServicoTriagem {
-        -EstrategiaClassificacao estrategia
-        -AtendimentoRepository repositorio
-        -GerenciadorFila fila
-        -NotificadorClinico notificador
-        +realizarTriagem(Paciente, SinaisVitais, String) Atendimento
-        +encaminhar(Atendimento, String, String) void
-        +reclassificar(Atendimento, SinaisVitais) Atendimento
-        +chamarProximo() Atendimento
-        +finalizar(Atendimento) void
+    class QueueManager {
+        -PriorityQueue~MedicalCare~ queue
+        +add(MedicalCare) void
+        +next() MedicalCare
+        +peek() MedicalCare
+        +size() int
+        +isEmpty() boolean
+    }
+    class AlertObserver {
+        <<interface>>
+        +notify(MedicalCare) void
+    }
+    class MedicalPanel {
+        +notify(MedicalCare) void
+    }
+    class ClinicalNotifier {
+        -List~AlertObserver~ observers
+        +register(AlertObserver) void
+        +triggerAlert(MedicalCare) void
+    }
+    class MedicalCareService {
+        -ClassificationStrategy strategy
+        -MedicalCareRepositoryContract repository
+        -PatientRepositoryContract patientRepository
+        -QueueManager queue
+        -ClinicalNotifier notifier
+        +create(MedicalCareRequest) MedicalCareResponse
+        +refer(MedicalCareRequest) MedicalCareResponse
+        +reclassify(String, VitalSigns) MedicalCareResponse
+        +callNext() Optional~MedicalCareResponse~
+        +finish(String) MedicalCareResponse
+        +queueStatus() QueueStatus
+    }
+    class PatientService {
+        -PatientRepositoryContract repository
+        +create(PatientRequest) PatientResponse
+        +list() List~PatientResponse~
+    }
+    class ApiServer {
+        +start(int) Javalin
+    }
+    class MedicalCareController {
+        +register(Javalin) void
     }
 
-    Atendimento --> Paciente
-    Atendimento --> NivelUrgencia
-    Atendimento --> CategoriaPrioridade
-    Atendimento --> StatusAtendimento
-    Atendimento *-- SinaisVitais
-    ClassificacaoManchester ..|> EstrategiaClassificacao
-    ClassificacaoSimples ..|> EstrategiaClassificacao
-    FabricaEstrategiaClassificacao ..> EstrategiaClassificacao
-    FabricaEstrategiaClassificacao ..> TipoProtocolo
-    AtendimentoRepositoryEmMemoria ..|> AtendimentoRepository
-    PainelMedico ..|> ObservadorAlerta
-    NotificadorClinico o-- ObservadorAlerta
-    ServicoTriagem --> EstrategiaClassificacao
-    ServicoTriagem --> AtendimentoRepository
-    ServicoTriagem --> GerenciadorFila
-    ServicoTriagem --> NotificadorClinico
+    MedicalCare --> Patient
+    MedicalCare --> VitalSigns
+    MedicalCare --> UrgencyLevel
+    MedicalCare --> PriorityCategory
+    MedicalCare --> MedicalCareStatus
+    ManchesterClassification ..|> ClassificationStrategy
+    SimpleClassification ..|> ClassificationStrategy
+    ClassificationStrategyFactory ..> ClassificationStrategy
+    PostgresMedicalCareRepository ..|> MedicalCareRepositoryContract
+    PostgresPatientRepository ..|> PatientRepositoryContract
+    MedicalPanel ..|> AlertObserver
+    ClinicalNotifier o-- AlertObserver
+    MedicalCareService --> ClassificationStrategy
+    MedicalCareService --> MedicalCareRepositoryContract
+    MedicalCareService --> PatientRepositoryContract
+    MedicalCareService --> QueueManager
+    MedicalCareService --> ClinicalNotifier
+    ApiServer --> MedicalCareController
+    MedicalCareController --> MedicalCareService
 ```
 
 ---
@@ -169,53 +204,58 @@ classDiagram
 
 | Classe | Responsabilidade | Padrão / SOLID |
 |--------|------------------|----------------|
-| `Paciente`, `SinaisVitais` | Dados do paciente e da aferição | Entidade / Value Object (SRP) |
-| `Atendimento` | Representa um atendimento e seu estado | Entidade (SRP) |
-| `NivelUrgencia` | Níveis de risco com prioridade e tempo-alvo | Enum |
-| `StatusAtendimento` | Estados do ciclo de vida do atendimento | Enum |
-| `EstrategiaClassificacao` | Contrato para classificar risco | **Strategy** (OCP, LSP, ISP) |
-| `ClassificacaoManchester` / `ClassificacaoSimples` | Regras concretas de classificação | **Strategy** |
-| `FabricaEstrategiaClassificacao` | Cria a estratégia conforme o protocolo | **Factory Method** (criacional) |
-| `AtendimentoRepository` | Contrato de persistência | **Repository** (DIP) |
-| `AtendimentoRepositoryEmMemoria` | Persistência em memória (sem banco) | **Repository** |
-| `GerenciadorFila` | Ordena por prioridade e, no empate, por chegada | Lógica central testável |
-| `ObservadorAlerta` / `PainelMedico` | Reagem a casos críticos | **Observer** (comportamental) |
-| `NotificadorClinico` | Dispara alertas aos observadores | **Observer** (Subject) |
-| `ServicoTriagem` | Orquestra triagem → fila → alerta | Depende de interfaces (DIP, SRP) |
+| `Patient`, `VitalSigns` | Dados do paciente e da aferição | Entidade / Value Object (SRP) |
+| `MedicalCare` | Representa um atendimento e seu estado | Entidade (SRP) |
+| `UrgencyLevel`, `PriorityCategory`, `MedicalCareStatus` | Níveis, categorias e estados | Enums |
+| `ClassificationStrategy` | Contrato para classificar risco | **Strategy** (OCP, LSP, ISP) |
+| `ManchesterClassification` / `SimpleClassification` | Regras concretas de classificação | **Strategy** |
+| `ClassificationStrategyFactory` | Cria a estratégia conforme o protocolo | **Factory Method** (criacional) |
+| `MedicalCareRepositoryContract` / `PatientRepositoryContract` | Contratos de persistência | **Repository** (DIP) |
+| `PostgresMedicalCareRepository` / `PostgresPatientRepository` | Persistência em PostgreSQL | **Repository** |
+| `QueueManager` | Ordena por cor, categoria e chegada | Lógica central testável |
+| `AlertObserver` / `MedicalPanel` | Reagem a casos críticos | **Observer** (comportamental) |
+| `ClinicalNotifier` | Dispara alertas aos observadores | **Observer** (Subject) |
+| `MedicalCareService` / `PatientService` | Orquestram o fluxo | Dependem de interfaces (DIP, SRP) |
+| `ApiServer` / `MedicalCareController` | Expõem o fluxo por HTTP | Camada de entrada (API REST) |
 
-**Coração testável:** `GerenciadorFila`. Use `PriorityQueue` com um `Comparator` que
-ordena **(1)** por `NivelUrgencia.prioridade` (Vermelho mais urgente), **(2)** por
-`CategoriaPrioridade` (idoso 80+ > PCD/idoso 60+ > normal) e **(3)** por
-`dataHoraChegada` (mais antigo primeiro). A unidade usa 4 cores (sem Azul).
+**Coração testável:** `QueueManager`. Usa `PriorityQueue` com um `Comparator` que
+ordena (1) por `UrgencyLevel.priority` (RED mais urgente), (2) por `PriorityCategory`
+(idoso 80+ > PCD/idoso 60+ > normal) e (3) por `arrivalDateTime` (mais antigo primeiro).
+A unidade usa 4 cores (sem Azul).
 
-## 4. Estrutura de pacotes sugerida (Maven)
+## 4. Estrutura de pacotes
 
 ```
 src/main/java/br/unibh/gestar/
-├── dominio/        Paciente, Atendimento, SinaisVitais, NivelUrgencia, StatusAtendimento
-├── classificacao/  EstrategiaClassificacao, ClassificacaoManchester, ClassificacaoSimples,
-│                   TipoProtocolo, FabricaEstrategiaClassificacao
-├── fila/           GerenciadorFila
-├── repositorio/    AtendimentoRepository, AtendimentoRepositoryEmMemoria
-├── alerta/         ObservadorAlerta, PainelMedico, NotificadorClinico
-├── servico/        ServicoTriagem
-└── Main.java       (demonstração do fluxo)
-src/test/java/br/unibh/gestar/
-├── fila/           GerenciadorFilaTest
-├── classificacao/  ClassificacaoManchesterTest
-└── servico/        ServicoTriagemTest
+├── domain/          MedicalCare, Patient, VitalSigns, UrgencyLevel,
+│                    MedicalCareStatus, PriorityCategory
+├── classification/  ClassificationStrategy, ManchesterClassification,
+│                    SimpleClassification, ProtocolType, ClassificationStrategyFactory
+├── queue/           QueueManager, QueueUtils
+├── contract/        MedicalCareRepositoryContract, PatientRepositoryContract
+├── infra/           PostgresConnection, PostgresMedicalCareRepository,
+│                    PostgresPatientRepository
+├── alert/           AlertObserver, MedicalPanel, ClinicalNotifier
+├── service/         MedicalCareService, PatientService, QueueStatus
+├── entrypoint/      ApiServer, controller/(MedicalCareController, PatientController),
+│                    routes/, dto/
+└── Main.java        (sobe a API)
+db/schema.sql        (esquema do PostgreSQL)
 ```
 
-## 5. Mapa dos padrões (para a documentação e a defesa)
+## 5. Mapa dos padrões
 
 | Categoria | Padrão | Onde | Justificativa |
 |-----------|--------|------|---------------|
-| Criacional | Factory Method | `FabricaEstrategiaClassificacao` | Cria a estratégia certa sem acoplar o serviço às classes concretas |
-| Estrutural | Repository | `AtendimentoRepository` | Isola a persistência; permite trocar memória por banco sem afetar a regra |
-| Comportamental | Strategy | `EstrategiaClassificacao` | Troca o protocolo de classificação sem reescrever a fila |
-| Comportamental | Observer | `NotificadorClinico` / `ObservadorAlerta` | Notifica o corpo clínico em casos críticos |
+| Criacional | Factory Method | `ClassificationStrategyFactory` | Cria a estratégia certa sem acoplar o serviço às classes concretas |
+| Estrutural | Repository | `MedicalCareRepositoryContract` + `PostgresMedicalCareRepository` | Isola a persistência; permitiu adotar PostgreSQL sem afetar a regra |
+| Comportamental | Strategy | `ClassificationStrategy` | Troca o protocolo de classificação sem reescrever a fila |
+| Comportamental | Observer | `ClinicalNotifier` / `AlertObserver` | Notifica o corpo clínico em casos críticos |
 
-> **Evolução futura:** mantivemos `StatusAtendimento` como enum por simplicidade. O ciclo
-> de vida do atendimento poderia ser refatorado para o padrão **State** (GoF) numa próxima
-> iteração. Não é necessário neste escopo, já que os quatro padrões adotados cobrem as
-> categorias criacional, estrutural e comportamental.
+> **Arquitetura:** a persistência usa PostgreSQL (`PostgresMedicalCareRepository`, com o
+> esquema em `db/schema.sql`) atrás do contrato `MedicalCareRepositoryContract` (DIP), e a
+> fila de prioridade vive em memória (`QueueManager`). A camada `entrypoint` expõe o fluxo
+> por uma API REST (Javalin); os endpoints estão documentados no README. O ciclo de vida do
+> atendimento (`MedicalCareStatus`) é um enum e poderia evoluir para o padrão State numa
+> próxima iteração, mas os quatro padrões adotados já cobrem as categorias criacional,
+> estrutural e comportamental.

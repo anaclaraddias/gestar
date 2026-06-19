@@ -40,7 +40,7 @@ André Luiz, ou unidade Unimed com gineco/obstetra).
 
 **Protocolo de classificação**
 - Utilizam o **Protocolo de Manchester**, obrigatório; o COREN exige certificação do
-  enfermeiro para classificar risco. *Valida a estratégia `ClassificacaoManchester`.*
+  enfermeiro para classificar risco. *Valida a estratégia `ManchesterClassification`.*
 - A classificação não é um simples limite sobre sinais vitais: parte da **queixa
   principal** → abre o **fluxograma** correspondente → avalia os **discriminadores**;
   cada discriminador alterado define a **cor**. Sinais usados na maioria dos casos:
@@ -125,10 +125,10 @@ abre-se o **protocolo de infarto**. Sem alteração, o paciente segue o fluxo no
 
 | Origem | Item | Situação na fatia |
 |--------|------|-------------------|
-| Elegibilidade | Triagem deve verificar se o caso é atendido pela unidade; se não, registrar **encaminhamento** | Recomendado (baixo custo) |
-| Desempate | Fila deve priorizar **idoso** dentro da mesma cor, antes da ordem de chegada | Implementar |
-| Reavaliação | Reclassificação **monotônica** (só aumenta a urgência) | Implementar |
-| Classificação | Discriminadores que impõem **urgência mínima** por queixa (ex.: dor torácica ≥ urgente) | Implementar (enriquece a Strategy) |
+| Elegibilidade | Triagem deve verificar se o caso é atendido pela unidade; se não, registrar **encaminhamento** | Implementado |
+| Desempate | Fila deve priorizar **idoso** dentro da mesma cor, antes da ordem de chegada | Implementado |
+| Reavaliação | Reclassificação **monotônica** (só aumenta a urgência) | Implementado |
+| Classificação | Discriminadores que impõem **urgência mínima** por queixa (ex.: dor torácica ≥ urgente) | Implementado (enriquece a Strategy) |
 | Protocolos | Acionamento de **protocolos especiais** com metas de tempo (AVC, IAM) | Documentar (futuro) |
 | Concorrência | Atendimento em triagem deve ser **exclusivo** de um profissional (evitar exclusão/duplicidade) | Documentar (futuro) |
 | Histórico | Exibir **doenças de base** na triagem para interpretar o basal | Documentar (futuro) |
@@ -153,4 +153,4 @@ abre-se o **protocolo de infarto**. Sem alteração, o paciente segue o fluxo no
 
 > **Implicação para o modelo:** "encaminhamento" não é apenas "não entrar na fila", e sim uma
 > **disposição registrada** (motivo, sinais vitais, unidade de destino, profissional). Isso
-> enriquece o estado `ENCAMINHADO` do atendimento.
+> enriquece o estado de encaminhamento (`REFERRED`) do atendimento.

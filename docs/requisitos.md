@@ -28,7 +28,7 @@ ficam dispersas.
 Conforme orientação da disciplina, **não se pretende implementar a solução completa**.
 Delimita-se uma fatia coesa e relevante:
 
-**Dentro do escopo (será implementado):**
+**Dentro do escopo (implementado):**
 
 - Cadastro de paciente para atendimento.
 - Triagem digital com **classificação de risco** pelo Protocolo de Manchester.
@@ -39,6 +39,8 @@ Delimita-se uma fatia coesa e relevante:
 - **Reavaliação/reclassificação** de pacientes que pioram (regra monotônica).
 - Controle do **ciclo de vida do atendimento** (estados).
 - **Alertas clínicos** para casos críticos.
+- **Exposição das operações por uma API REST** (triagem, fila, encaminhamento).
+- **Persistência em PostgreSQL**, mantendo a fila de prioridade em memória.
 
 **Fora do escopo (trabalhos futuros, levantados na entrevista):**
 
@@ -46,11 +48,14 @@ Delimita-se uma fatia coesa e relevante:
 - Protocolos especiais com metas de tempo (AVC, IAM) e orquestração de condutas.
 - Fixação de doenças de base na triagem para interpretar o basal do paciente.
 - Acessibilidade para pacientes surdos/mudos (Libras).
-- Gestão de exames, prontuário longitudinal completo, integrações e interface gráfica.
+- Gestão de exames, prontuário longitudinal completo, integração com sistemas legados
+  e interface gráfica (front-end).
 
-> **Justificativa do recorte:** a triagem com fila priorizada é o núcleo diferenciador
-> do Gestar e a fatia que melhor exercita os conceitos avaliados (OO, SOLID, padrões e
-> testes), mantendo escopo viável no prazo.
+> **Justificativa e evolução do recorte:** a triagem com fila priorizada é o núcleo
+> diferenciador do Gestar e a fatia que melhor exercita os conceitos avaliados (OO,
+> SOLID, padrões e testes). A abstração da persistência por contrato (RNF04) permitiu,
+> durante a implementação, adotar **PostgreSQL** e expor o fluxo por uma **API REST**
+> (Javalin), sem alterar a regra de negócio. A fila de prioridade permanece em memória.
 
 ## 3. Atores
 
@@ -79,7 +84,7 @@ Delimita-se uma fatia coesa e relevante:
 ### 4.2 Principais achados (resumo; detalhe completo em `entrevista-elicitacao.md`)
 
 - A priorização é por gravidade (cor), não por ordem de chegada. **Confirma a fila.**
-- O protocolo usado é o **Manchester**: queixa → fluxograma → discriminadores → cor.
+- O protocolo usado é o **Manchester**: queixa, fluxograma, discriminadores, cor.
   **Confirma a estratégia de classificação.**
 - Dentro da mesma cor, **idoso tem prioridade**, não é FIFO puro. **Corrige a fila.**
 - A reclassificação **não regride**, só aumenta a urgência. **Nova regra.**
@@ -88,8 +93,8 @@ Delimita-se uma fatia coesa e relevante:
 
 ## 5. Fluxo do Processo (baseado na entrevista)
 
-`Senha → Queixa (técnica) → Classificação de risco (enfermeiro) → Cadastro (recepção)
-→ Fila priorizada → Atendimento (médico)`
+`Senha, Queixa (técnica), Classificação de risco (enfermeiro), Cadastro (recepção),
+Fila priorizada, Atendimento (médico)`
 
 Casos não elegíveis (ex.: obstétricos, psiquiátricos) são **encaminhados** a outra
 unidade na etapa de triagem, não entrando na fila.
@@ -108,6 +113,7 @@ unidade na etapa de triagem, não entrando na fila.
 | RF08 | Reavaliar um paciente e **reclassificá-lo apenas para maior urgência** (nunca menor). |
 | RF09 | Controlar o estado do atendimento (aguardando, em triagem, na fila, em atendimento, finalizado, encaminhado). |
 | RF10 | Emitir alerta clínico quando o atendimento for classificado como Vermelho (emergência). |
+| RF11 | Expor as operações de triagem, fila e encaminhamento por uma API REST. |
 
 ## 7. Requisitos Não-Funcionais
 
@@ -116,25 +122,25 @@ unidade na etapa de triagem, não entrando na fila.
 | RNF01 | O protocolo de classificação deve ser substituível sem alterar a lógica da fila. |
 | RNF02 | Solução em Java seguindo os princípios SOLID. |
 | RNF03 | Regras de negócio principais (classificação, ordenação, reclassificação) cobertas por testes unitários. |
-| RNF04 | Persistência abstraída, permitindo trocar memória por banco sem impactar a regra. |
+| RNF04 | Persistência abstraída por contrato (`MedicalCareRepositoryContract`), realizada com PostgreSQL sem impactar a regra de negócio. |
 
 ## 8. Casos de Uso
 
 ```
-Técnica de Enfermagem ──> (UC01 Registrar queixa)
-Enfermeiro ──> (UC02 Classificar risco)
-                    │ «include» -> (UC03 Verificar elegibilidade)
-                    │ «extend» (não elegível) -> (UC04 Encaminhar paciente)
-                    │ «extend» (elegível) -> (UC05 Inserir na fila priorizada)
-                    │ «extend» (Vermelho) -> (UC06 Emitir alerta clínico)
-Enfermeiro ──> (UC07 Reavaliar e reclassificar)
-Médico ──> (UC08 Chamar próximo paciente)
-Médico ──> (UC09 Finalizar atendimento)
+Técnica de Enfermagem --> (UC01 Registrar queixa)
+Enfermeiro --> (UC02 Classificar risco)
+                    | «include» -> (UC03 Verificar elegibilidade)
+                    | «extend» (não elegível) -> (UC04 Encaminhar paciente)
+                    | «extend» (elegível) -> (UC05 Inserir na fila priorizada)
+                    | «extend» (Vermelho) -> (UC06 Emitir alerta clínico)
+Enfermeiro --> (UC07 Reavaliar e reclassificar)
+Médico --> (UC08 Chamar próximo paciente)
+Médico --> (UC09 Finalizar atendimento)
 ```
 
 ### UC02: Classificar risco
-Enfermeiro registra sinais → sistema aplica o protocolo → atribui a cor → verifica
-elegibilidade (UC03) → enfileira (UC05) ou encaminha (UC04).
+Enfermeiro registra sinais, o sistema aplica o protocolo, atribui a cor, verifica
+elegibilidade (UC03) e enfileira (UC05) ou encaminha (UC04).
 
 ### UC04: Encaminhar paciente
 Caso o caso não seja atendido pela unidade, o atendimento recebe estado "encaminhado"
@@ -144,8 +150,8 @@ e não entra na fila.
 Diante de piora, novos sinais são aferidos; a urgência só pode aumentar (RN05).
 
 ### UC08: Chamar próximo paciente
-Sistema retorna o atendimento de maior prioridade (cor → idoso → chegada) e o move
-para "em atendimento".
+Sistema retorna o atendimento de maior prioridade (cor, depois idoso, depois chegada)
+e o move para "em atendimento".
 
 ## 9. Regras de Negócio
 
@@ -162,17 +168,18 @@ para "em atendimento".
 
 ## 10. Rastreabilidade
 
-| RF | Caso de Uso | Padrão/Componente |
-|----|-------------|-------------------|
-| RF03 | UC02 | *Strategy* (EstrategiaClassificacao) |
-| RF04 | UC03, UC04 | Regra de elegibilidade + estado "encaminhado" |
-| RF05, RF06, RF07 | UC05, UC08 | GerenciadorFila (PriorityQueue + Comparator cor→idoso→chegada) |
-| RF08 | UC07 | Regra de reclassificação monotônica (RN05) |
-| RF09 | UC04, UC08, UC09 | Estados do atendimento (enum StatusAtendimento) |
-| RF10 | UC06 | *Observer* (NotificadorClinico) |
-| RNF04 | (geral) | *Repository* (AtendimentoRepository) |
-| RF01, RF02 | UC01, UC02 | *Factory Method* (criação de Atendimento/Estratégia) |
+| RF | Caso de Uso | Padrão/Componente (código em inglês) |
+|----|-------------|--------------------------------------|
+| RF03 | UC02 | *Strategy* (`ClassificationStrategy`, `ManchesterClassification`) |
+| RF04 | UC03, UC04 | Regra de elegibilidade + estado `REFERRED` (`MedicalCare.markReferred`) |
+| RF05, RF06, RF07 | UC05, UC08 | `QueueManager` (PriorityQueue + Comparator cor, categoria, chegada) |
+| RF08 | UC07 | Reclassificação monotônica (`MedicalCare.reclassify`, RN05) |
+| RF09 | UC04, UC08, UC09 | Estados do atendimento (enum `MedicalCareStatus`) |
+| RF10 | UC06 | *Observer* (`ClinicalNotifier`, `AlertObserver`) |
+| RNF04 | (geral) | *Repository* (`MedicalCareRepositoryContract`, implementado por `PostgresMedicalCareRepository`) |
+| RF01, RF02 | UC01, UC02 | *Factory Method* (`ClassificationStrategyFactory`); orquestração em `MedicalCareService` |
+| RF11 | UC02, UC08 | API REST (`ApiServer`, `MedicalCareController`) |
 
 ---
 
-*Documento atualizado após entrevista de elicitação (junho/2026).*
+*Documento atualizado após a entrevista de elicitação e a evolução da implementação (junho/2026).*
