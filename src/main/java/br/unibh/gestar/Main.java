@@ -1,16 +1,34 @@
 package br.unibh.gestar;
 
-/**
- * Ponto de entrada da aplicacao Gestar.
- * Sistema de triagem e fila priorizada de atendimento.
- *
- * A demonstracao do fluxo completo (triagem, classificacao, fila e alertas)
- * sera implementada no passo final, depois do dominio, das estrategias de
- * classificacao, do repositorio, da fila e do servico de triagem.
- */
-public class Main {
+import br.unibh.gestar.alert.ClinicalNotifier;
+import br.unibh.gestar.alert.MedicalPanel;
+import br.unibh.gestar.classification.ClassificationStrategy;
+import br.unibh.gestar.classification.ClassificationStrategyFactory;
+import br.unibh.gestar.classification.ProtocolType;
+import br.unibh.gestar.entrypoint.ApiServer;
+import br.unibh.gestar.infra.PostgresMedicalCareRepository;
+import br.unibh.gestar.infra.PostgresPatientRepository;
+import br.unibh.gestar.queue.QueueManager;
+import br.unibh.gestar.contract.MedicalCareRepositoryContract;
+import br.unibh.gestar.contract.PatientRepositoryContract;
+import br.unibh.gestar.service.PatientService;
+import br.unibh.gestar.service.MedicalCareService;
 
+public class Main {
     public static void main(String[] args) {
-        System.out.println("Gestar: sistema de triagem e fila priorizada (em construcao).");
+        int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
+
+        MedicalCareRepositoryContract repository = new PostgresMedicalCareRepository();
+        PatientRepositoryContract patientRepository = new PostgresPatientRepository();
+
+        QueueManager queue = new QueueManager();
+        ClinicalNotifier notifier = new ClinicalNotifier();
+        notifier.register(new MedicalPanel());
+        ClassificationStrategy strategy = ClassificationStrategyFactory.create(ProtocolType.MANCHESTER);
+
+        PatientService patientService = new PatientService(patientRepository);
+        MedicalCareService service = new MedicalCareService(strategy, repository, patientRepository, queue, notifier);
+
+        new ApiServer(service, patientService).start(port);
     }
 }
